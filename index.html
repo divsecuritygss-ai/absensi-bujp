@@ -881,8 +881,7 @@
     <div id="view-home" class="view-content">
       <div class="hero-banner">
         <h1 class="display-5 fw-bold animate__animated animate__fadeInDown">Monitoring Absensi Real Time Pendukung KPI BUJP</h1>
-        <p class="lead opacity-75 animate__animated animate__fadeInUp">Pastikan Seluruh Personil Absen Masuk dan Pulang Sesuai Dengan Jadwal
-          <?= getBulanTahun(); ?></p>
+        <p class="lead opacity-75 animate__animated animate__fadeInUp">Pastikan Seluruh Personil Absen Masuk dan Pulang Sesuai Dengan Jadwal <span id="heroBulanTahun"></span></p>
       </div>
 
       <div class="dashboard-container">
@@ -1820,6 +1819,9 @@ function getKTPDigital() {
             updateClock();
             setInterval(updateClock, 1000);
         }
+        if (typeof updateHeroBulanTahun === "function") {
+            updateHeroBulanTahun();
+        }
 
         setInterval(() => {
             if (typeof fetchData === "function") fetchData(true); 
@@ -1884,6 +1886,15 @@ function getKTPDigital() {
         const dayEl = document.getElementById('currentDay');
         if (clockEl) clockEl.innerText = n.toLocaleTimeString('id-ID', { hour12: false });
         if (dayEl) dayEl.innerText = n.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    }
+
+    function updateHeroBulanTahun() {
+        const n = new Date();
+        const namaBulan = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+        const heroEl = document.getElementById('heroBulanTahun');
+        if (heroEl) {
+            heroEl.innerText = namaBulan[n.getMonth()] + " " + n.getFullYear();
+        }
     }
 
     function initMap() {
