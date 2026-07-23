@@ -44,6 +44,8 @@
                   return function(...args) {
                     fetch(GAS_WEBAPP_URL, {
                       method: 'POST',
+                      mode: 'cors',
+                      redirect: 'follow',
                       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                       body: JSON.stringify({ action: prop, payload: args })
                     })
@@ -52,6 +54,7 @@
                       if (successCb) successCb(data);
                     })
                     .catch(err => {
+                      console.error("Fetch API Error [" + prop + "]:", err);
                       if (failureCb) failureCb(err);
                     });
                   };
