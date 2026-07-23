@@ -1,0 +1,21 @@
+{
+  "short_name": "Absensi BUJP",
+  "name": "Sistem Absensi & Laporan Harian BUJP",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3064/3064197.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3064/3064197.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#064e3b",
+  "theme_color": "#064e3b",
+  "display": "standalone",
+  "orientation": "portrait"
+}
