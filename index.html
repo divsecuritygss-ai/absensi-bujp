@@ -44,9 +44,7 @@
                   return function(...args) {
                     fetch(GAS_WEBAPP_URL, {
                       method: 'POST',
-                      mode: 'cors',
-                      redirect: 'follow',
-                      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                      headers: { 'Content-Type': 'text/plain' },
                       body: JSON.stringify({ action: prop, payload: args })
                     })
                     .then(res => res.json())
