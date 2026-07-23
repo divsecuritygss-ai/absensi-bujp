@@ -44,10 +44,15 @@
                   return function(...args) {
                     fetch(GAS_WEBAPP_URL, {
                       method: 'POST',
-                      headers: { 'Content-Type': 'text/plain' },
+                      mode: 'cors',
+                      redirect: 'follow',
+                      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                       body: JSON.stringify({ action: prop, payload: args })
                     })
-                    .then(res => res.json())
+                    .then(res => {
+                      if (!res.ok) throw new Error('Network response was not ok, status: ' + res.status);
+                      return res.json();
+                    })
                     .then(data => {
                       if (successCb) successCb(data);
                     })
