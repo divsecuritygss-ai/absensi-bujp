@@ -3366,25 +3366,82 @@ function getKTPDigital() {
 }
 
 /**
- * PENCARIAN KHUSUS LAPORAN HARIAN (BYPASS JAM ABSEN, GEMBOK JADWAL OFF)
+ * PENCARIAN KHUSUS LAPORAN HARIAN (BYPASS JAM ABSEN, DENGAN DUKUNGAN SHIFT LINTAS HARI)
  */
 function searchPersonilLaporan(nik) {
     const pInfo = (masterData.personil || []).find(p => (p.NIK || "").toString() === nik.toString());
     if (!pInfo) return Swal.fire("Gagal", "NIK tidak ditemukan.", "warning");
 
     const now = new Date();
-    const dIdx = now.getDate();
-    const mIdx = now.getMonth() + 1;
-    const yIdx = now.getFullYear();
+    const hourNow = now.getHours();
+    
+    const formatDate = (d) => {
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    };
+    
+    const todayStr = formatDate(now);
+    const kemaren = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const yesterdayStr = formatDate(kemaren);
 
-    const jadwalEntry = (masterData.jadwal || []).find(j => j.NIK.toString() === nik.toString() && j.Bulan == mIdx && j.Tahun == yIdx);
-    const shiftJadwal = jadwalEntry ? (jadwalEntry['D' + dIdx] || "OFF").toUpperCase() : "OFF";
+    // 1. Cek riwayat absensi aktif (Apakah personil punya absen masuk aktif hari ini atau gantung kemarin)
+    const logs = (masterData.absensiHarian || []).filter(a => a.NIK && a.NIK.toString() === nik.toString());
+    
+    let logHariIni = logs.find(a => {
+        let tglLogRaw = (a.Tanggal || a.TANGGAL || "");
+        return tglLogRaw && tglLogRaw.toString().substring(0, 10) === todayStr;
+    });
 
-    if (shiftJadwal === 'OFF') {
+    let logKemarinBelumPulang = logs.find(a => {
+        let tglLogRaw = (a.Tanggal || a.TANGGAL || "");
+        if (!tglLogRaw) return false;
+        let tglLogString = tglLogRaw.toString().substring(0, 10);
+        let shiftNya = (a.SHIFT_JADWAL || a.SHIFT || "").toUpperCase();
+        let sudahPulang = a.WAKTU_PULANG && a.WAKTU_PULANG.toString().trim() !== "";
+        let isShiftMalamGantung = shiftNya.includes("MALAM") || shiftNya === "SLS" || shiftNya === "POINTA" || shiftNya === "POINT A" || shiftNya.includes("SLS_MALAM") || shiftNya.includes("POINTA_MALAM");
+        return (tglLogString === yesterdayStr) && !sudahPulang && isShiftMalamGantung;
+    });
+
+    let activeLog = logHariIni || logKemarinBelumPulang;
+    let activeShift = "";
+
+    if (activeLog) {
+        // Jika terdapat log absensi aktif, gunakan shift dari log tersebut
+        activeShift = (activeLog.SHIFT_JADWAL || activeLog.SHIFT || "").toUpperCase();
+    } else {
+        // 2. Jika belum ada log absensi, periksa jadwal kalender (Hari ini vs Kemarin lintas hari)
+        const dIdx = now.getDate();
+        const mIdx = now.getMonth() + 1;
+        const yIdx = now.getFullYear();
+
+        const jadwalToday = (masterData.jadwal || []).find(j => j.NIK.toString() === nik.toString() && j.Bulan == mIdx && j.Tahun == yIdx);
+        const shiftToday = jadwalToday ? (jadwalToday['D' + dIdx] || "OFF").toUpperCase() : "OFF";
+
+        if (shiftToday !== 'OFF') {
+            activeShift = shiftToday;
+        } else {
+            // Jika jadwal hari ini OFF, cek jika saat ini masih pagi (< 12:00) DAN jadwal kemarin adalah shift malam/lintas hari
+            if (hourNow < 12) {
+                const dYesterday = kemaren.getDate();
+                const mYesterday = kemaren.getMonth() + 1;
+                const yYesterday = kemaren.getFullYear();
+
+                const jadwalYesterday = (masterData.jadwal || []).find(j => j.NIK.toString() === nik.toString() && j.Bulan == mYesterday && j.Tahun == yYesterday);
+                const shiftYesterday = jadwalYesterday ? (jadwalYesterday['D' + dYesterday] || "OFF").toUpperCase() : "OFF";
+
+                const isShiftMalamLintasHari = shiftYesterday.includes("MALAM") || shiftYesterday === "SLS" || shiftYesterday === "POINTA" || shiftYesterday === "POINT_A" || shiftYesterday.includes("SLS_MALAM") || shiftYesterday.includes("POINTA_MALAM");
+
+                if (isShiftMalamLintasHari) {
+                    activeShift = shiftYesterday;
+                }
+            }
+        }
+    }
+
+    if (!activeShift || activeShift === 'OFF') {
         document.getElementById('inputNikLaporan').value = "";
         return Swal.fire({
             title: "Akses Ditolak",
-            html: `Personil <b>${pInfo.Nama}</b> hari ini berstatus <b>LIBUR (OFF)</b>.<br><br>Laporan Harian Pos hanya dapat dibuat oleh personil yang memiliki jadwal bertugas hari ini.`,
+            html: `Personil <b>${pInfo.Nama}</b> hari ini berstatus <b>LIBUR (OFF)</b>.<br><br>Laporan Harian Pos hanya dapat dibuat oleh personil yang memiliki jadwal bertugas aktif.`,
             icon: "error"
         });
     }
@@ -3395,7 +3452,7 @@ function searchPersonilLaporan(nik) {
         Nama: pInfo.Nama,
         BUJP: pInfo.BUJP,
         Wilayah: pInfo.Wilayah,
-        Shift: shiftJadwal
+        Shift: activeShift
     };
 
     // Langsung buka modal Laporan Harian tanpa terhalang jam absen
