@@ -1463,6 +1463,27 @@
   </div>
 </div>
 
+<!-- MODAL DETAIL LAPORAN HARIAN POS (PIN PROTECTED VIEW) -->
+<div class="modal fade" id="modalDetailLaporanPos" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+      <div class="modal-header bg-primary text-white" style="border-radius: 20px 20px 0 0;">
+        <div class="d-flex align-items-center gap-2">
+          <h5 class="modal-title fw-bold" id="modalDetailLaporanTitle"><i class="fas fa-clipboard-list me-2"></i>DETAIL LAPORAN HARIAN POS</h5>
+          <span id="modalDetailLaporanCount" class="badge bg-light text-primary px-3 py-1 rounded-pill fw-bold"></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4" id="modalDetailLaporanBody">
+        <!-- Dynamic Content Injected via JavaScript -->
+      </div>
+      <div class="modal-footer bg-light border-0" style="border-radius: 0 0 20px 20px;">
+        <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">TUTUP</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -2290,93 +2311,298 @@ function getKTPDigital() {
     }
 
     function renderLaporanBujpSummary() {
-        const container = document.getElementById('containerBujpLaporan');
-        const badgeTotal = document.getElementById('totalLaporanBadge');
-        if (!container) return;
+    var container = document.getElementById('containerBujpLaporan');
+    var badgeTotal = document.getElementById('totalLaporanBadge');
+    if (!container) return;
 
-        const now = new Date();
-        const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    var now = new Date();
+    var todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
 
-        // Filter laporan khusus hari ini
-        const laporanHariIni = (masterData.laporanHarian || []).filter(l => {
-            let tglStr = (l.TANGGAL || l.WAKTU_INPUT || "").toString().substring(0, 10);
-            return tglStr === todayStr;
+    // Filter laporan khusus hari ini
+    var laporanHariIni = (masterData.laporanHarian || []).filter(function(l) {
+        var tglStr = (l.TANGGAL || l.WAKTU_INPUT || "").toString().substring(0, 10);
+        return tglStr === todayStr;
+    });
+
+    if (badgeTotal) {
+        badgeTotal.innerText = laporanHariIni.length + " Laporan Terkirim";
+    }
+
+    // Rekap per WILAYAH KERJA (dengan info BUJP)
+    var wilayahMap = {};
+
+    // Inisialisasi daftar Wilayah Kerja dari Master Personil
+    (masterData.personil || []).forEach(function(p) {
+        var w = (p.Wilayah || "").toString().trim().toUpperCase();
+        var b = (p.BUJP || "").toString().trim().toUpperCase();
+        if (w && !wilayahMap[w]) {
+            wilayahMap[w] = { bujp: b || "-", total: 0, routine: 0, temuan: 0, incident: 0, emergency: 0 };
+        }
+    });
+
+    // Inisialisasi daftar Wilayah Kerja dari Map Locations
+    (masterData.mapLocations || []).forEach(function(loc) {
+        var w = (loc.Wilayah || loc.WILAYAH || loc['Nama Lokasi'] || "").toString().trim().toUpperCase();
+        var b = (loc.BUJP || loc.bujp || "").toString().trim().toUpperCase();
+        if (w && !wilayahMap[w]) {
+            wilayahMap[w] = { bujp: b || "-", total: 0, routine: 0, temuan: 0, incident: 0, emergency: 0 };
+        }
+    });
+
+    // Akumulasi Laporan Harian Hari Ini
+    laporanHariIni.forEach(function(l) {
+        var w = (l.WILAYAH || "LAINNYA").toString().trim().toUpperCase();
+        var b = (l.BUJP || "").toString().trim().toUpperCase();
+        if (!wilayahMap[w]) {
+            wilayahMap[w] = { bujp: b || "-", total: 0, routine: 0, temuan: 0, incident: 0, emergency: 0 };
+        }
+        if (b && wilayahMap[w].bujp === "-") {
+            wilayahMap[w].bujp = b;
+        }
+        wilayahMap[w].total++;
+        var kat = (l.KATEGORI_LAPORAN || "").toUpperCase();
+        if (kat.indexOf("TEMUAN") !== -1) wilayahMap[w].temuan++;
+        else if (kat.indexOf("EMERGENCY") !== -1 || kat.indexOf("DARURAT") !== -1) wilayahMap[w].emergency++;
+        else if (kat.indexOf("KEJADIEN") !== -1 || kat.indexOf("INCIDENT") !== -1 || kat.indexOf("KHUSUS") !== -1) wilayahMap[w].incident++;
+        else wilayahMap[w].routine++;
+    });
+
+    var keys = Object.keys(wilayahMap).sort();
+    if (keys.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center text-muted py-2"><i class="fas fa-info-circle me-1"></i>Belum ada laporan harian pos hari ini.</div>';
+        return;
+    }
+
+    var html = "";
+
+    // 1. HITUNG TOTAL EMERGENCY GLOBAL & IDENTIFIKASI WILAYAH TERDAMPAK
+    var totalEmergencyGlobal = 0;
+    var emergencyRegions = [];
+    keys.forEach(function(w) {
+        if (wilayahMap[w].emergency > 0) {
+            totalEmergencyGlobal += wilayahMap[w].emergency;
+            emergencyRegions.push({ wilayah: w, count: wilayahMap[w].emergency, bujp: wilayahMap[w].bujp });
+        }
+    });
+
+    // 2. KARTU VISUAL PERMANEN KHUSUS EMERGENCY (KLIK INTERAKTIF DENGAN VERIFIKASI PIN)
+    if (totalEmergencyGlobal > 0) {
+        var badgesHtml = emergencyRegions.map(function(r) {
+            return '<span class="badge bg-danger text-white me-1">' + r.wilayah + ' (' + r.count + ' Lap)</span>';
+        }).join(' ');
+
+        html += '<div class="col-12 mb-3">' +
+            '<div class="card bg-danger bg-opacity-10 border border-2 border-danger p-3 shadow-sm rounded-3" onclick="openDetailLaporanWithPin(\'ALL\', \'EMERGENCY\')" style="cursor: pointer;" title="Klik untuk membuka detail Laporan Emergency">' +
+            '<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">' +
+            '<div class="d-flex align-items-center">' +
+            '<div class="bg-danger text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px; min-width: 45px;">' +
+            '<i class="fas fa-exclamation-triangle fa-lg animate__animated animate__flash animate__infinite"></i>' +
+            '</div>' +
+            '<div>' +
+            '<h6 class="fw-bold text-danger m-0 text-uppercase"><i class="fas fa-bolt me-1"></i>PERINGATAN SITUASI DARURAT (EMERGENCY)</h6>' +
+            '<small class="text-dark fw-bold">Terdeteksi <b>' + totalEmergencyGlobal + ' Laporan Emergency</b> di wilayah: ' + badgesHtml + ' <span class="text-primary text-decoration-underline ms-1"><i class="fas fa-lock me-1"></i>Lihat Detail</span></small>' +
+            '</div>' +
+            '</div>' +
+            '<span class="badge bg-danger text-white px-3 py-2 rounded-pill fs-6 animate__animated animate__pulse animate__infinite shadow-sm">' +
+            '<i class="fas fa-unlock-alt me-1"></i>' + totalEmergencyGlobal + ' EMERGENCY (KLIK UNTUK DETAIL)' +
+            '</span>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+    } else {
+        html += '<div class="col-12 mb-3">' +
+            '<div class="card bg-success bg-opacity-10 border border-1 border-success border-opacity-25 p-3 shadow-sm rounded-3">' +
+            '<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">' +
+            '<div class="d-flex align-items-center">' +
+            '<div class="bg-success text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; min-width: 40px;">' +
+            '<i class="fas fa-shield-alt fa-lg"></i>' +
+            '</div>' +
+            '<div>' +
+            '<h6 class="fw-bold text-success m-0 text-uppercase"><i class="fas fa-check-circle me-1"></i>MONITORING SITUASI DARURAT (EMERGENCY)</h6>' +
+            '<small class="text-muted fw-bold">Kondisi Seluruh Wilayah Kerja Aman & Terkendali (Nihil Laporan Darurat Hari Ini)</small>' +
+            '</div>' +
+            '</div>' +
+            '<span class="badge bg-success text-white px-3 py-2 rounded-pill fs-6 shadow-sm">' +
+            '<i class="fas fa-check me-1"></i>0 EMERGENCY (AMAN)' +
+            '</span>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+    }
+
+    // 3. RENDER KARTU REKAPITULASI WILAYAH (KLIK INTERAKTIF DENGAN VERIFIKASI PIN)
+    keys.forEach(function(w) {
+        var data = wilayahMap[w];
+        var hasEmergency = data.emergency > 0;
+
+        var bgClass = hasEmergency 
+            ? "bg-danger bg-opacity-10 border-2 border-danger shadow" 
+            : (data.total > 0 ? "bg-light border-info" : "bg-light opacity-75");
+
+        var emergencyBadge = hasEmergency 
+            ? '<span class="badge bg-danger text-white rounded-pill px-2 py-1 ms-1 animate__animated animate__pulse animate__infinite"><i class="fas fa-bolt me-1"></i>' + data.emergency + ' Emergency</span>' 
+            : "";
+
+        var emergencyText = hasEmergency 
+            ? '<span class="text-danger fw-bold"><i class="fas fa-bolt me-1"></i>Emerg: <b>' + data.emergency + '</b></span>' 
+            : "";
+
+        html += '<div class="col-md-4 col-sm-6">' +
+            '<div class="p-3 rounded-3 border ' + bgClass + ' h-100 d-flex flex-column justify-content-between position-relative" onclick="openDetailLaporanWithPin(\'' + w + '\', \'ALL\')" style="cursor: pointer;" title="Klik untuk membuka detail Laporan ' + w + '">' +
+            '<div class="d-flex justify-content-between align-items-center mb-2">' +
+            '<div>' +
+            '<span class="fw-bold text-dark d-block"><i class="fas fa-map-marker-alt text-info me-1"></i>' + w + '</span>' +
+            '<small class="text-muted fw-bold" style="font-size: 0.7rem;">BUJP: ' + data.bujp + '</small>' +
+            '</div>' +
+            '<div class="text-end">' +
+            '<span class="badge ' + (data.total > 0 ? 'bg-info' : 'bg-secondary') + ' rounded-pill fs-6">' + data.total + ' Lap</span>' +
+            emergencyBadge +
+            '</div>' +
+            '</div>' +
+            '<div class="d-flex gap-2 small text-muted justify-content-between pt-2 border-top flex-wrap" style="font-size: 0.7rem;">' +
+            '<span><i class="fas fa-check-circle text-success me-1"></i>Aman: <b>' + data.routine + '</b></span>' +
+            '<span><i class="fas fa-search text-warning me-1"></i>Temuan: <b>' + data.temuan + '</b></span>' +
+            '<span><i class="fas fa-exclamation-circle text-danger me-1"></i>Kejadian: <b>' + data.incident + '</b></span>' +
+            emergencyText +
+            '</div>' +
+            '</div>' +
+            '</div>';
+    });
+
+    container.innerHTML = html;
+}
+
+    // ==========================================
+    // MODUL POPUP DETAIL LAPORAN HARIAN (PIN PROTECTED)
+    // ==========================================
+    function openDetailLaporanWithPin(wilayah, kategoriFilter) {
+        Swal.fire({
+            title: 'Akses Terkunci',
+            text: 'Masukkan PIN Keamanan untuk melihat Detail Laporan:',
+            input: 'password',
+            inputAttributes: { 
+                autocapitalize: 'off',
+                maxlength: '10',
+                placeholder: 'Masukkan PIN...'
+            },
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-unlock me-1"></i> Buka Laporan',
+            confirmButtonColor: '#064e3b',
+            cancelButtonText: 'Batal'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                if (result.value === "84L1") {
+                    showDetailLaporanModal(wilayah, kategoriFilter);
+                } else {
+                    Swal.fire("Akses Ditolak", "PIN Keamanan yang Anda masukkan salah!", "error");
+                }
+            }
+        });
+    }
+
+    function showDetailLaporanModal(wilayahTarget, kategoriFilter) {
+        if (!kategoriFilter) kategoriFilter = 'ALL';
+        var now = new Date();
+        var todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+
+        // Filter data laporan harian khusus hari ini
+        var listLaporan = (masterData.laporanHarian || []).filter(function(l) {
+            var tglStr = (l.TANGGAL || l.WAKTU_INPUT || "").toString().substring(0, 10);
+            var matchDate = (tglStr === todayStr);
+            var matchWilayah = (wilayahTarget === 'ALL' || (l.WILAYAH || "").toString().trim().toUpperCase() === wilayahTarget.toUpperCase());
+            
+            var kat = (l.KATEGORI_LAPORAN || "").toString().toUpperCase();
+            var matchKategori = true;
+            if (kategoriFilter === 'EMERGENCY') {
+                matchKategori = (kat.indexOf('EMERGENCY') !== -1 || kat.indexOf('DARURAT') !== -1);
+            }
+
+            return matchDate && matchWilayah && matchKategori;
         });
 
-        if (badgeTotal) {
-            badgeTotal.innerText = laporanHariIni.length + " Laporan Terkirim";
+        var modalTitle = document.getElementById('modalDetailLaporanTitle');
+        var modalBody = document.getElementById('modalDetailLaporanBody');
+        var badgeCount = document.getElementById('modalDetailLaporanCount');
+
+        if (modalTitle) {
+            if (kategoriFilter === 'EMERGENCY') {
+                modalTitle.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-2"></i>DETAIL LAPORAN SITUASI DARURAT (EMERGENCY)';
+            } else {
+                modalTitle.innerHTML = '<i class="fas fa-clipboard-list me-2"></i>DETAIL LAPORAN HARIAN POS - ' + wilayahTarget;
+            }
         }
 
-        // Rekap per WILAYAH KERJA (dengan info BUJP)
-        const wilayahMap = {};
-
-        // Inisialisasi daftar Wilayah Kerja dari Master Personil
-        (masterData.personil || []).forEach(p => {
-            let w = (p.Wilayah || "").toString().trim().toUpperCase();
-            let b = (p.BUJP || "").toString().trim().toUpperCase();
-            if (w && !wilayahMap[w]) {
-                wilayahMap[w] = { bujp: b || "-", total: 0, routine: 0, temuan: 0, incident: 0, emergency: 0 };
-            }
-        });
-
-        // Inisialisasi daftar Wilayah Kerja dari Map Locations
-        (masterData.mapLocations || []).forEach(loc => {
-            let w = (loc.Wilayah || loc.WILAYAH || loc['Nama Lokasi'] || "").toString().trim().toUpperCase();
-            let b = (loc.BUJP || loc.bujp || "").toString().trim().toUpperCase();
-            if (w && !wilayahMap[w]) {
-                wilayahMap[w] = { bujp: b || "-", total: 0, routine: 0, temuan: 0, incident: 0, emergency: 0 };
-            }
-        });
-
-        // Akumulasi Laporan Harian Hari Ini
-        laporanHariIni.forEach(l => {
-            let w = (l.WILAYAH || "LAINNYA").toString().trim().toUpperCase();
-            let b = (l.BUJP || "").toString().trim().toUpperCase();
-            if (!wilayahMap[w]) {
-                wilayahMap[w] = { bujp: b || "-", total: 0, routine: 0, temuan: 0, incident: 0, emergency: 0 };
-            }
-            if (b && wilayahMap[w].bujp === "-") {
-                wilayahMap[w].bujp = b;
-            }
-            wilayahMap[w].total++;
-            let kat = (l.KATEGORI_LAPORAN || "").toUpperCase();
-            if (kat.includes("TEMUAN")) wilayahMap[w].temuan++;
-            else if (kat.includes("KEJADIEN") || kat.includes("INCIDENT")) wilayahMap[w].incident++;
-            else if (kat.includes("EMERGENCY")) wilayahMap[w].emergency++;
-            else wilayahMap[w].routine++;
-        });
-
-        const keys = Object.keys(wilayahMap).sort();
-        if (keys.length === 0) {
-            container.innerHTML = `<div class="col-12 text-center text-muted py-2"><i class="fas fa-info-circle me-1"></i>Belum ada laporan harian pos hari ini.</div>`;
-            return;
+        if (badgeCount) {
+            badgeCount.innerText = listLaporan.length + ' Laporan';
         }
 
-        let html = "";
-        keys.forEach(w => {
-            let data = wilayahMap[w];
-            let bgClass = data.total > 0 ? "bg-light border-info" : "bg-light opacity-75";
-            html += `
-                <div class="col-md-4 col-sm-6">
-                  <div class="p-3 rounded-3 border ${bgClass} h-100 d-flex flex-column justify-content-between">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <div>
-                        <span class="fw-bold text-dark d-block"><i class="fas fa-map-marker-alt text-info me-1"></i>${w}</span>
-                        <small class="text-muted fw-bold" style="font-size: 0.7rem;">BUJP: ${data.bujp}</small>
-                      </div>
-                      <span class="badge ${data.total > 0 ? 'bg-info' : 'bg-secondary'} rounded-pill fs-6">${data.total} Lap</span>
-                    </div>
-                    <div class="d-flex gap-2 small text-muted justify-content-between pt-2 border-top" style="font-size: 0.72rem;">
-                      <span><i class="fas fa-check-circle text-success me-1"></i>Aman: <b>${data.routine}</b></span>
-                      <span><i class="fas fa-search text-warning me-1"></i>Temuan: <b>${data.temuan}</b></span>
-                      <span><i class="fas fa-exclamation-triangle text-danger me-1"></i>Kejadian: <b>${data.incident + data.emergency}</b></span>
-                    </div>
-                  </div>
-                </div>
-            `;
-        });
+        if (!listLaporan || listLaporan.length === 0) {
+            modalBody.innerHTML = '<div class="text-center py-5 text-muted">' +
+                '<i class="fas fa-folder-open fa-3x mb-3 opacity-50"></i>' +
+                '<h6>Tidak ada detail laporan ditemukan untuk kriteria ini.</h6>' +
+                '</div>';
+        } else {
+            var htmlCards = '<div class="d-flex flex-column gap-3">';
+            listLaporan.forEach(function(item) {
+                var kat = (item.KATEGORI_LAPORAN || "SITUASI_ROUTINE").toUpperCase();
+                var badgeClass = "bg-success";
+                var badgeText = "SITUASI AMAN & ROUTINE";
 
-        container.innerHTML = html;
+                if (kat.indexOf("TEMUAN") !== -1) {
+                    badgeClass = "bg-warning text-dark";
+                    badgeText = "TEMUAN PATROLI";
+                } else if (kat.indexOf("EMERGENCY") !== -1 || kat.indexOf("DARURAT") !== -1) {
+                    badgeClass = "bg-danger animate__animated animate__pulse animate__infinite";
+                    badgeText = "SITUASI DARURAT / EMERGENCY";
+                } else if (kat.indexOf("KEJADIEN") !== -1 || kat.indexOf("INCIDENT") !== -1 || kat.indexOf("KHUSUS") !== -1) {
+                    badgeClass = "bg-danger";
+                    badgeText = "KEJADIAN KHUSUS";
+                }
+
+                var fotoBtn = "";
+                var imgUrl = item.DOKUMENTASI_URL || item.dokumentasiUrl || "";
+                if (imgUrl && imgUrl !== "-" && imgUrl.indexOf("Error") === -1) {
+                    fotoBtn = '<div class="mt-2 pt-2 border-top">' +
+                        '<a href="' + imgUrl + '" target="_blank" class="btn btn-sm btn-outline-primary fw-bold rounded-pill">' +
+                        '<i class="fas fa-image me-1"></i> Lihat Foto / Lampiran Dokumentasi' +
+                        '</a>' +
+                        '</div>';
+                }
+
+                var waktuDisplay = item.WAKTU_INPUT || item.TANGGAL || "-";
+                if (waktuDisplay.length > 19) waktuDisplay = waktuDisplay.substring(0, 19).replace('T', ' ');
+
+                htmlCards += '<div class="card border-0 shadow-sm bg-light rounded-3 p-3">' +
+                    '<div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-1">' +
+                        '<div>' +
+                            '<span class="badge ' + badgeClass + ' px-3 py-1 mb-1">' + badgeText + '</span>' +
+                            '<h6 class="fw-bold text-dark m-0"><i class="fas fa-user-shield me-1 text-primary"></i> ' + (item.NAMA || "-") + ' (' + (item.NIK || "-") + ')</h6>' +
+                            '<small class="text-muted fw-bold"><i class="fas fa-building me-1"></i> BUJP: ' + (item.BUJP || "-") + ' | Wilayah: ' + (item.WILAYAH || "-") + '</small>' +
+                        '</div>' +
+                        '<div class="text-end">' +
+                            '<small class="badge bg-secondary text-white fw-bold"><i class="fas fa-clock me-1"></i>' + waktuDisplay + '</small>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="bg-white p-2 rounded-2 border mb-2">' +
+                        '<small class="text-muted d-block fw-bold text-uppercase" style="font-size:0.65rem;">Pos Penjagaan / Area</small>' +
+                        '<span class="fw-bold text-primary">' + (item.POS_PENJAGAAN || item.posPenjagaan || "-") + '</span>' +
+                    '</div>' +
+                    '<div class="bg-white p-3 rounded-2 border">' +
+                        '<small class="text-muted d-block fw-bold text-uppercase mb-1" style="font-size:0.65rem;">Uraian Laporan / Kejadian</small>' +
+                        '<p class="m-0 text-dark fw-500" style="white-space: pre-line; font-size: 0.9rem;">' + (item.URAIAN_KEJADIAN || item.uraianKejadian || "-") + '</p>' +
+                    '</div>' +
+                    fotoBtn +
+                    '</div>';
+            });
+            htmlCards += '</div>';
+            modalBody.innerHTML = htmlCards;
+        }
+
+        var modalEl = document.getElementById('modalDetailLaporanPos');
+        if (modalEl) {
+            var modalObj = new bootstrap.Modal(modalEl);
+            modalObj.show();
+        }
     }
 
     function populateBujpChartFilter() {
@@ -3799,21 +4025,21 @@ function openLaporanForm() {
     new bootstrap.Modal(document.getElementById('modalLaporanHarian')).show();
 }
 
-// Preview Foto dari Kamera HP / Galeri
-function previewFotoLaporan(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const imgPreview = document.getElementById('imgPreviewLaporan');
-            const previewBox = document.getElementById('fotoPreviewBox');
-            if (imgPreview && previewBox) {
-                imgPreview.src = e.target.result;
-                previewBox.classList.remove('d-none');
-            }
-        };
-        reader.readAsDataURL(input.files[0]);
+// PREVIEW FOTO DARI KAMERA HP / GALERI
+    function previewFotoLaporan(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgPreview = document.getElementById('imgPreviewLaporan');
+                const previewBox = document.getElementById('fotoPreviewBox');
+                if (imgPreview && previewBox) {
+                    imgPreview.src = e.target.result;
+                    previewBox.classList.remove('d-none');
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
     }
-}
 
 function saveLaporanHarianFinal() {
     const pos = document.getElementById('fPosPenjagaan').value.trim();
@@ -3849,7 +4075,12 @@ function saveLaporanHarianFinal() {
                     const modalInstance = bootstrap.Modal.getInstance(modalEl);
                     if (modalInstance) modalInstance.hide();
                 } else {
-                    Swal.fire("Gagal", res.message, "error");
+                    Swal.fire({
+                        title: "Pemberitahuan Laporan",
+                        html: res.message ? res.message.replace(/\n/g, '<br>') : "Gagal menyimpan laporan.",
+                        icon: "warning",
+                        confirmButtonColor: "#064e3b"
+                    });
                 }
             })
             .withFailureHandler(err => {
