@@ -2121,6 +2121,33 @@
   </div>
 </div>
 
+<!-- MODAL VIEWER LAMPIRAN FOTO INFRAME -->
+<div class="modal fade" id="modalFotoViewer" tabindex="-1" style="z-index: 1060;">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-dark text-white py-2 px-3">
+        <h6 class="modal-title fw-bold m-0" id="fotoViewerTitle">
+          <i class="fas fa-image me-2 text-info"></i>DOKUMENTASI FOTO POS
+        </h6>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-2 text-center" style="background: #0b1120; min-height: 250px; display: flex; align-items: center; justify-content: center;">
+        <div id="fotoViewerLoading" class="text-white py-4 d-none">
+          <div class="spinner-border text-info" role="status"></div>
+          <div class="small mt-2">Memuat gambar dokumentasi...</div>
+        </div>
+        <img id="imgViewerFrame" src="" class="img-fluid rounded border border-secondary shadow-sm d-none" style="max-height: 75vh; width: auto; object-fit: contain;">
+      </div>
+      <div class="modal-footer bg-dark border-top border-secondary py-2 px-3 d-flex justify-content-between">
+        <small class="text-muted" style="font-size: 0.75rem;">Lampiran Dokumen Patroli / Pos BUJP</small>
+        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 fw-bold" data-bs-dismiss="modal">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -3312,10 +3339,12 @@ function getKTPDigital() {
                 var fotoBtn = "";
                 var imgUrl = item.DOKUMENTASI_URL || item.dokumentasiUrl || "";
                 if (imgUrl && imgUrl !== "-" && imgUrl.indexOf("Error") === -1) {
+                    var safePelapor = (item.NAMA || "Petugas").replace(/'/g, "\\'");
+                    var safePos = (item.POS_PENJAGAAN || "Pos").replace(/'/g, "\\'");
                     fotoBtn = '<div class="mt-2 pt-2 border-top">' +
-                        '<a href="' + imgUrl + '" target="_blank" class="btn btn-sm btn-outline-primary fw-bold rounded-pill">' +
-                        '<i class="fas fa-image me-1"></i> Lihat Foto / Lampiran Dokumentasi' +
-                        '</a>' +
+                        '<button type="button" class="btn btn-sm btn-outline-primary fw-bold rounded-pill" onclick="viewDokumentasiInframe(\'' + imgUrl + '\', \'' + safePelapor + '\', \'' + safePos + '\')">' +
+                        '<i class="fas fa-image me-1"></i> Lihat Dokumentasi Foto' +
+                        '</button>' +
                         '</div>';
                 }
 
@@ -3354,6 +3383,53 @@ function getKTPDigital() {
             modalObj.show();
         }
     }
+
+    // ==========================================
+// VIEWER DOKUMENTASI INFRAME (POPUP PREVIEW)
+// ==========================================
+function viewDokumentasiInframe(rawUrl, pelapor, pos) {
+    if (!rawUrl || rawUrl === "-") return;
+
+    var directImgUrl = rawUrl;
+
+    // Ekstrak ID file jika link berupa format Google Drive agar dapat tampil di tag <img>
+    var driveMatch = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || rawUrl.match(/id=([a-zA-Z0-9_-]+)/);
+    if (driveMatch && driveMatch[1]) {
+        directImgUrl = "https://lh3.googleusercontent.com/d/" + driveMatch[1];
+    }
+
+    var modalEl = document.getElementById('modalFotoViewer');
+    var titleEl = document.getElementById('fotoViewerTitle');
+    var imgEl = document.getElementById('imgViewerFrame');
+    var loadEl = document.getElementById('fotoViewerLoading');
+
+    if (titleEl) {
+        titleEl.innerHTML = '<i class="fas fa-image me-2 text-info"></i>DOKUMENTASI: ' + pos + ' (' + pelapor + ')';
+    }
+
+    if (imgEl && loadEl) {
+        imgEl.classList.add('d-none');
+        loadEl.classList.remove('d-none');
+
+        imgEl.onload = function() {
+            loadEl.classList.add('d-none');
+            imgEl.classList.remove('d-none');
+        };
+
+        imgEl.onerror = function() {
+            loadEl.classList.add('d-none');
+            // Fallback jika Google Drive memblokir direct preview: buka melalui tab baru
+            window.open(rawUrl, '_blank');
+        };
+
+        imgEl.src = directImgUrl;
+    }
+
+    if (modalEl) {
+        var modalObj = new bootstrap.Modal(modalEl);
+        modalObj.show();
+    }
+}
 
     function populateBujpChartFilter() {
         const f = document.getElementById('filterBujpChart');
