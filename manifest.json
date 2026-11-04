@@ -1,23 +1,62 @@
 {
-  "short_name": "Absensi BUJP",
+  "id": "/?bujp_app=v6.26",
+  "start_url": "/?utm_source=pwa",
+  "scope": "/",
   "name": "Sistem Absensi & Laporan Harian BUJP",
+  "short_name": "Absensi BUJP",
+  "description": "Sistem monitoring presensi real-time penugasan sekuriti dan pelaporan patroli harian pos BUJP.",
+  "lang": "id",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#064e3b",
+  "theme_color": "#064e3b",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "https://lh3.googleusercontent.com/d/1VshxTxYbt6qgGmeLCLGEedA1jktW9MDD",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "https://lh3.googleusercontent.com/d/1VshxTxYbt6qgGmeLCLGEedA1jktW9MDD",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://lh3.googleusercontent.com/d/1VshxTxYbt6qgGmeLCLGEedA1jktW9MDD",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "start_url": "/",
-  "background_color": "#064e3b",
-  "theme_color": "#064e3b",
-  "display": "standalone",
-  "orientation": "portrait"
+  "shortcuts": [
+    {
+      "name": "Presensi Penugasan",
+      "short_name": "Presensi",
+      "description": "Buka form absen masuk atau pulang",
+      "url": "/?action=absen",
+      "icons": [
+        {
+          "src": "https://lh3.googleusercontent.com/d/1VshxTxYbt6qgGmeLCLGEedA1jktW9MDD",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Laporan Harian Pos",
+      "short_name": "Laporan Pos",
+      "description": "Kirim laporan situasi pos & dokumentasi patroli",
+      "url": "/?action=laporan",
+      "icons": [
+        {
+          "src": "https://lh3.googleusercontent.com/d/1VshxTxYbt6qgGmeLCLGEedA1jktW9MDD",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
 }
