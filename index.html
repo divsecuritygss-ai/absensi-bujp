@@ -1390,6 +1390,196 @@
       border-color: rgba(51, 65, 85, 0.8);
       color: #f8fafc;
     }
+
+    /* =========================================================
+       MODERN CONSOLE ADAPTIVE THEME (LIGHT & DARK COMPATIBLE)
+       ========================================================= */
+    .secops-container {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 0 28px 0 !important;
+    }
+
+    /* Kartu Konsol Mengikuti Sistem Tema Aktif */
+    .glass-panel-tactical {
+      background: var(--surface);
+      border: 1.5px solid var(--border-subtle);
+      box-shadow: var(--card-shadow);
+      border-radius: 20px;
+      padding: 1.5rem;
+      transition: all 0.25s ease;
+    }
+    .glass-panel-tactical:hover {
+      box-shadow: var(--card-hover-shadow);
+    }
+
+    .secops-avatar-ring {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5, 150, 105, 0.12);
+      color: var(--secondary);
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .badge-secops {
+      background: rgba(5, 150, 105, 0.15);
+      color: var(--secondary);
+      border: 1px solid rgba(5, 150, 105, 0.35);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+    }
+
+    .tactical-clock {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      line-height: 1;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+    [data-theme="dark"] .tactical-clock {
+      color: #34d399 !important;
+    }
+
+    .tactical-wib {
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+
+    .shift-status-box {
+      background: rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    [data-theme="dark"] .shift-status-box {
+      background: #0b1120 !important;
+    }
+
+    .btn-tactical-absen {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      border: none;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 1.05rem;
+      padding: 16px 22px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 8px 20px -3px rgba(5, 150, 105, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-tactical-absen:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px -4px rgba(5, 150, 105, 0.5);
+      filter: brightness(1.08);
+    }
+    .btn-tactical-absen:disabled {
+      background: #94a3b8 !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    [data-theme="dark"] .btn-tactical-absen:disabled {
+      background: #1e293b !important;
+      color: #64748b !important;
+    }
+
+    .streak-card {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 14px;
+      padding: 12px 16px;
+    }
+    [data-theme="dark"] .streak-card {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
+    }
+
+    .streak-badge-amber {
+      background: rgba(245, 158, 11, 0.15);
+      color: #d97706;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      font-weight: 800;
+    }
+    [data-theme="dark"] .streak-badge-amber {
+      color: #fbbf24;
+    }
+
+    .streak-progress-bar {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    [data-theme="dark"] .streak-progress-bar {
+      background: #1e293b;
+    }
+
+    .streak-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b 0%, #10b981 100%);
+      border-radius: 9999px;
+    }
+
+    .quick-action-tile {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-main);
+    }
+    .quick-action-tile:hover {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+    }
+    [data-theme="dark"] .quick-action-tile {
+      background: #0b1120;
+      color: #ffffff;
+    }
+    [data-theme="dark"] .quick-action-tile:hover {
+      background: #1e293b;
+    }
+
+    .quick-tile-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
   </style>
   </head>
 <body>
@@ -1451,105 +1641,168 @@
 
       <div class="dashboard-container">
         
-        <!-- 1. TACTICAL ACTION CONSOLE: SEARCH & INPUT DI POSISI UTAMA -->
-        <div class="card p-3 p-md-4 border-0 mb-4 search-card-container">
-          <div class="row g-3 align-items-stretch">
+        <!-- =========================================================
+             TACTICAL SEC-OPS COMMAND CONSOLE (SEJAJAR RATA KIRI-KANAN)
+             ========================================================= -->
+        <div class="secops-container mb-4 animate__animated animate__fadeIn">
+          <div class="glass-panel-tactical p-3 p-md-4">
             
-            <!-- KOLOM KIRI: PRESENSI MASUK / PULANG -->
-            <div class="col-lg-6">
-              <div class="search-column-box">
+            <!-- Baris Header Atas: Identitas & Form Pencarian Nama (NIK Terlindungi) -->
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-3">
+                <div class="secops-avatar-ring">
+                  <i class="fas fa-user-shield"></i>
+                </div>
                 <div>
+                  <div class="d-flex align-items-center gap-2">
+                    <h5 class="fw-bold m-0" id="modernNama">Verifikasi Penugasan Personil</h5>
+                    <span class="badge-secops">SEC-OPS</span>
+                  </div>
+                  <small class="text-muted fw-semibold" id="modernNik">Pilih nama personil untuk memvalidasi jadwal hari ini</small>
+                </div>
+              </div>
+
+              <!-- Pencarian Nama Otomatis (Hanya menampilkan Nama & Wilayah, NIK Disembunyikan) -->
+              <div class="d-flex align-items-center gap-2">
+                <div class="autocomplete-wrapper" style="min-width: 260px;">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-subtle text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" id="inputNik" class="form-control form-control-sm rounded-end fw-bold" placeholder="Ketik Nama Personil..." onkeyup="handleAutocompleteSecureNama(this)" autocomplete="off">
+                  </div>
+                  <div id="listHomeSearchSecure" class="autocomplete-items d-none"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Jembatan Kompatibilitas Sistem -->
+            <input type="hidden" id="homeNik">
+            <input type="hidden" id="inputNikLaporan">
+            <input type="hidden" id="homeNikLaporan">
+            <div id="listHomeSearch" class="d-none"></div>
+            <div id="listHomeSearchLaporan" class="d-none"></div>
+            <div id="personilResult" class="d-none">
+              <span id="resBujp"></span><span id="resNama"></span><span id="resWilayah"></span>
+              <span id="resShift"></span><span id="resStatusText"></span>
+              <button id="btnMasuk" class="d-none"></button><button id="btnLaporanHarian" class="d-none"></button>
+              <button id="btnPulang" class="d-none"></button><div id="msgOff" class="d-none"></div><div id="msgSelesai" class="d-none"></div>
+            </div>
+
+            <!-- Grid 2 Kolom Sejajar: Proporsional di Layar Lebar, Responsif di Mobile -->
+            <div class="row g-3 align-items-stretch">
+              
+              <!-- Kolom Kiri: Jam Taktis, Status Roster & Tombol Presensi -->
+              <div class="col-lg-6 d-flex flex-column justify-content-between">
+                <div class="p-3 rounded-3 mb-3 border bg-light bg-opacity-50">
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="action-badge-pill bg-success bg-opacity-10 text-success">
-                      <i class="fas fa-fingerprint me-1"></i> 1. Presensi Penugasan
-                    </span>
-                    <small class="text-muted fw-bold" style="font-size: 0.68rem;">Terkunci Sesuai Jam Kerja</small>
-                  </div>
-                  <div class="autocomplete-wrapper action-input-shell">
-                    <div class="input-group modern-search-input">
-                      <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                      <input type="text" id="inputNik" class="form-control py-3 bg-white" placeholder="Ketik NIK atau Nama personil..." onkeyup="handleAutocomplete(this, 'homeNik')">
+                    <div>
+                      <small class="text-muted fw-bold d-block" id="modernTglHariIni" style="font-size: 0.75rem;">-</small>
+                      <div class="d-flex align-items-baseline">
+                        <span class="tactical-clock" id="modernClock">00:00:00</span>
+                        <span class="tactical-wib">WIB</span>
+                      </div>
                     </div>
-                    <div id="listHomeSearch" class="autocomplete-items d-none"></div>
-                    <input type="hidden" id="homeNik">
-                  </div>
-                </div>
-                <div class="small text-muted mt-2 ps-1 d-flex align-items-center" style="font-size: 0.72rem;">
-                  <i class="fas fa-shield-alt me-1 text-secondary"></i> Verifikasi kehadiran pos masuk &amp; selesai tugas harian.
-                </div>
-              </div>
-            </div>
-
-            <!-- KOLOM KANAN: LAPORAN HARIAN POS -->
-            <div class="col-lg-6">
-              <div class="search-column-box">
-                <div>
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="action-badge-pill bg-info bg-opacity-10 text-info">
-                      <i class="fas fa-clipboard-check me-1"></i> 2. Laporan Pos &amp; Patroli
-                    </span>
-                    <small class="text-muted fw-bold" style="font-size: 0.68rem;">Fleksibel (Aktif Bertugas)</small>
-                  </div>
-                  <div class="autocomplete-wrapper action-input-shell">
-                    <div class="input-group modern-search-input input-laporan-focus">
-                      <span class="input-group-text bg-white"><i class="fas fa-file-signature text-info"></i></span>
-                      <input type="text" id="inputNikLaporan" class="form-control py-3 bg-white" placeholder="Ketik NIK / Nama pelapor pos..." onkeyup="handleAutocomplete(this, 'homeNikLaporan')">
+                    <div class="text-end">
+                      <small class="text-muted fw-bold d-block" style="font-size: 0.68rem;">BUJP / UNIT</small>
+                      <span class="badge bg-secondary bg-opacity-10 text-dark border border-secondary px-3 py-1 fw-bold" id="modernBujpVendor">-</span>
                     </div>
-                    <div id="listHomeSearchLaporan" class="autocomplete-items d-none"></div>
-                    <input type="hidden" id="homeNikLaporan">
+                  </div>
+
+                  <!-- Status Roster Hari Ini -->
+              <div class="shift-status-box mt-2">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="text-success fs-5"><i class="far fa-clock"></i></div>
+                  <div>
+                    <div class="d-flex align-items-center gap-2">
+                      <small class="text-muted fw-bold" style="font-size: 0.68rem;">Jadwal Roster Hari Ini</small>
+                      <span class="badge bg-secondary bg-opacity-10 text-muted border border-secondary" id="modernShiftBadge" style="font-size: 0.62rem;">-</span>
+                    </div>
+                    <div class="fw-bold small" id="modernShiftName">Pilih nama personil pada kolom pencarian...</div>
                   </div>
                 </div>
-                <div class="small text-muted mt-2 ps-1 d-flex align-items-center" style="font-size: 0.72rem;">
-                  <i class="fas fa-camera me-1 text-info"></i> Laporan patroli rutin, temuan khusus &amp; situasi darurat pos.
+                <div class="text-end">
+                  <span class="badge bg-secondary bg-opacity-10 text-muted border border-secondary px-2 py-1" id="modernStatusPill" style="font-size: 0.68rem;">Pilih Nama</span>
+                  <small class="text-muted d-block mt-1" id="modernStatusSub" style="font-size: 0.65rem;">Standar</small>
                 </div>
               </div>
             </div>
 
-          </div>
-        </div>
-
-        <!-- 2. KARTU HASIL PENCARIAN PERSONIL (INTERACTIVE ACTION CARD) -->
-        <div id="personilResult" class="d-none animate__animated animate__fadeInDown mb-4">
-          <div class="card p-4 shadow-sm border-0 border-start border-5 border-success" style="border-radius: var(--radius-md);">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <div>
-                <span class="badge bg-secondary mb-1" id="resBujp"></span>
-                <h4 id="resNama" class="fw-bolder mb-0 text-primary"></h4>
+            <!-- 3. Tombol Utama Presensi -->
+            <div class="mb-3">
+              <button type="button" id="btnModernActionAbsen" class="btn-tactical-absen" onclick="handleModernAbsenClick()" disabled>
+                <i class="fas fa-fingerprint fa-lg"></i>
+                <span id="btnModernActionText">Pilih Nama Personil Terlebih Dahulu</span>
+              </button>
+                  <div class="text-center mt-2">
+                    <small class="text-muted" style="font-size: 0.7rem;">
+                      <i class="fas fa-shield-alt me-1 text-success"></i> Verifikasi kehadiran terlindungi &amp; mandiri
+                    </small>
+                  </div>
+                </div>
               </div>
-              <div class="text-end">
-                <small class="text-muted d-block fw-bold" style="font-size: 0.68rem;">PENUGASAN WILAYAH</small>
-                <span class="badge bg-primary px-3 py-1 fs-6" id="resWilayah"></span>
+
+              <!-- Kolom Kanan: Gamifikasi Kedisiplinan & Dua Tombol Pintas -->
+              <div class="col-lg-6 d-flex flex-column justify-content-between">
+                <!-- Kartu Gamifikasi & Ranking Disiplin Berjalan -->
+                <div class="streak-card mb-3 flex-grow-1 d-flex flex-column justify-content-between">
+                  <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <div class="d-flex align-items-center gap-2">
+                        <span style="font-size: 1.35rem;">🏆</span>
+                        <div>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold small" id="modernStreakTitle">Sentinel Discipline</span>
+                            <span class="badge bg-warning text-dark fw-bolder px-2 py-1 shadow-sm" id="modernPersonilRank" style="font-size: 0.65rem;">RANK -</span>
+                          </div>
+                          <small class="text-muted d-block" id="modernStreakDesc" style="font-size: 0.68rem;">Kedisiplinan Kehadiran Tugas</small>
+                        </div>
+                      </div>
+                      <div class="text-end">
+                        <span class="text-success fw-bold small" id="modernStreakXp">100% Disiplin</span>
+                        <small class="text-muted d-block" style="font-size: 0.65rem;" id="modernStreakLvl">Skor Kehadiran</small>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center text-muted mb-1" style="font-size: 0.68rem;">
+                      <span id="modernRankNext">Peringkat Kehadiran Unit</span>
+                      <span id="modernRankPct" class="fw-bold text-success">100%</span>
+                    </div>
+                    <div class="streak-progress-bar mb-2">
+                      <div class="streak-progress-fill" id="modernStreakFill" style="width: 100%;"></div>
+                    </div>
+                  </div>
+                  <small class="text-muted fst-italic" style="font-size: 0.68rem;" id="modernRankDetailNote">
+                    *Peringkat dihitung otomatis dari rasio kehadiran terhadap jadwal dinas aktif bulan berjalan.
+                  </small>
+                </div>
+
+                <!-- Tombol Pintas Lapor Insiden & Roster Bulanan -->
+                <div class="row g-2">
+                  <div class="col-6">
+                    <div class="quick-action-tile h-100" onclick="triggerLaporanSecure()">
+                      <div class="quick-tile-icon bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
+                        <i class="fas fa-exclamation-triangle"></i>
+                      </div>
+                      <div>
+                        <span class="fw-bold d-block small">Lapor Insiden</span>
+                        <small class="text-muted" style="font-size: 0.65rem;">Darurat &amp; patroli pos</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="quick-action-tile h-100" onclick="openModalRosterPersonil()">
+                      <div class="quick-tile-icon bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                        <i class="fas fa-calendar-alt"></i>
+                      </div>
+                      <div>
+                        <span class="fw-bold d-block small">Roster Bulanan</span>
+                        <small class="text-muted" style="font-size: 0.65rem;">Lihat tgl 1 s/d 31</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
 
-            <div class="row g-3 p-3 bg-light rounded-3 mb-3 border">
-              <div class="col-6 border-end">
-                <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.7rem;">Shift Jadwal</small>
-                <h5 class="fw-bold text-success m-0" id="resShift"></h5>
-              </div>
-              <div class="col-6 ps-3">
-                <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.7rem;">Status Penugasan</small>
-                <h5 class="fw-bold m-0" id="resStatusText"></h5>
-              </div>
-            </div>
-
-            <div id="attendanceAction">
-              <button id="btnMasuk" class="btn btn-success btn-custom w-100 shadow-sm d-none mb-2" onclick="openAbsenForm('MASUK')">
-                  <i class="fas fa-sign-in-alt me-2"></i>ABSEN MASUK PENUGASAN
-              </button>
-              <button id="btnLaporanHarian" class="btn btn-info btn-custom w-100 shadow-sm d-none text-white fw-bold mb-2" onclick="openLaporanForm()">
-                  <i class="fas fa-clipboard-list me-2"></i>BUAT LAPORAN HARIAN POS
-              </button>
-              <button id="btnPulang" class="btn btn-warning btn-custom w-100 shadow-sm d-none text-white fw-bold" onclick="openAbsenForm('PULANG')">
-                  <i class="fas fa-sign-out-alt me-2"></i>ABSEN PULANG PENUGASAN
-              </button>
-              <div id="msgOff" class="alert alert-danger mb-0 fw-bold text-center d-none border-0 shadow-sm">
-                <i class="fas fa-calendar-times me-2"></i>Anda sedang OFF / Libur sesuai jadwal hari ini.
-              </div>
-              <div id="msgSelesai" class="alert alert-info mb-0 fw-bold text-center d-none border-0 shadow-sm">
-                <i class="fas fa-check-circle me-2"></i>Tugas Anda telah selesai untuk hari ini.
-              </div>
-            </div>
           </div>
         </div>
 
@@ -2467,7 +2720,7 @@ function getKTPDigital() {
         },
         "MALAM": {
           start: 18,      // Jam 18:00 | Pintu absen MASUK dibuka
-          end: 21,        // Jam 20:00 | Batas akhir absen MASUK
+          end: 22,        // Jam 20:00 | Batas akhir absen MASUK
           p_start: 7,     // Jam 07:00 | Pintu absen PULANG dibuka (Besok Pagi)
           p_end: 10,      // Jam 10:00 | Batas akhir absen PULANG
           min: 12,        // Durasi wajib kerja (19:00 - 07:00)
@@ -4640,60 +4893,110 @@ function searchPersonilLaporan(nik) {
 }
 
     function showShiftStatus(data, type) {
-        const personilResult = document.getElementById('personilResult');
-        const statusEl = document.getElementById('resStatusText');
-        const btnMasuk = document.getElementById('btnMasuk');
-        const btnLaporan = document.getElementById('btnLaporanHarian');
-        const btnPulang = document.getElementById('btnPulang');
-        const msgSelesai = document.getElementById('msgSelesai');
-        const msgOff = document.getElementById('msgOff');
+        // Update kompatibilitas background bridge
+        if (document.getElementById('resNama')) document.getElementById('resNama').innerText = data.Nama || "-";
+        if (document.getElementById('resBujp')) document.getElementById('resBujp').innerText = "BUJP: " + (data.BUJP || "-");
+        if (document.getElementById('resWilayah')) document.getElementById('resWilayah').innerText = data.Wilayah || "-";
+        if (document.getElementById('resShift')) document.getElementById('resShift').innerText = data.Shift || "-";
 
-        if (!personilResult || !statusEl) return;
+        // Update Elemen Konsol Taktis Baru
+        const modernNama = document.getElementById('modernNama');
+        const modernNik = document.getElementById('modernNik');
+        const modernBujpVendor = document.getElementById('modernBujpVendor');
+        const modernShiftName = document.getElementById('modernShiftName');
+        const modernShiftBadge = document.getElementById('modernShiftBadge');
+        const modernStatusPill = document.getElementById('modernStatusPill');
+        const modernStatusSub = document.getElementById('modernStatusSub');
+        const btnModern = document.getElementById('btnModernActionAbsen');
+        const btnModernText = document.getElementById('btnModernActionText');
 
-        document.getElementById('resNama').innerText = data.Nama || "-";
-        document.getElementById('resBujp').innerText = "BUJP: " + (data.BUJP || "-");
-        document.getElementById('resWilayah').innerText = data.Wilayah || "-";
-        document.getElementById('resShift').innerText = data.Shift || "-";
-        personilResult.classList.remove('d-none');
+        if (modernNama) modernNama.innerText = data.Nama || "Personil";
+        // NIK TIDAK DITAMPILKAN DI LAYAR AGAR TIDAK DISALAHGUNAKAN DI ROSTER BULANAN
+        if (modernNik) modernNik.innerText = `Wilayah Penugasan: ${data.Wilayah || "-"}`;
+        if (modernBujpVendor) modernBujpVendor.innerText = data.BUJP || "-";
 
-        if (btnMasuk) btnMasuk.classList.add('d-none');
-        if (btnLaporan) btnLaporan.classList.add('d-none');
-        if (btnPulang) btnPulang.classList.add('d-none');
-        if (msgSelesai) msgSelesai.classList.add('d-none');
-        if (msgOff) msgOff.classList.add('d-none');
-
-        if (type === 'OFF') {
-            if (msgOff) msgOff.classList.remove('d-none');
-            statusEl.innerHTML = '<span class="text-danger fw-bold">LIBUR (OFF)</span>';
-            return;
-        }
+        // Update Gamifikasi Disiplin
+        updateModernStreakGamification(data.NIK, data.Wilayah);
 
         const sudahPulang = data.WAKTU_PULANG && data.WAKTU_PULANG.toString().trim() !== "";
 
-        if (sudahPulang) {
-            statusEl.innerHTML = '<span class="text-info fw-bold">TUGAS SELESAI</span>';
-            if (msgSelesai) {
-                msgSelesai.classList.remove('d-none');
-                msgSelesai.innerHTML = '<i class="fas fa-check-circle me-2"></i>Anda Sudah Absen Pulang. Tugas Selesai.';
+        if (type === 'OFF' || data.Shift === 'OFF') {
+            if (modernShiftName) modernShiftName.innerText = "Libur Dinas (OFF)";
+            if (modernShiftBadge) {
+                modernShiftBadge.className = "badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-50";
+                modernShiftBadge.innerText = "OFF";
             }
+            if (modernStatusPill) {
+                modernStatusPill.className = "badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 px-2 py-1";
+                modernStatusPill.innerText = "Terkunci";
+            }
+            if (modernStatusSub) modernStatusSub.innerText = "Jadwal Libur";
+
+            if (btnModern) {
+                btnModern.disabled = true;
+                btnModern.className = "btn-tactical-absen";
+            }
+            if (btnModernText) btnModernText.innerText = "Sedang Libur (OFF)";
+            return;
+        }
+
+        if (sudahPulang) {
+            if (modernShiftName) modernShiftName.innerText = `Dinas ${data.Shift} (Selesai Tugas)`;
+            if (modernShiftBadge) {
+                modernShiftBadge.className = "badge bg-info bg-opacity-25 text-info border border-info border-opacity-50";
+                modernShiftBadge.innerText = data.Shift;
+            }
+            if (modernStatusPill) {
+                modernStatusPill.className = "badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 px-2 py-1";
+                modernStatusPill.innerText = "Selesai";
+            }
+            if (modernStatusSub) modernStatusSub.innerText = "Tugas Tuntas";
+
+            if (btnModern) {
+                btnModern.disabled = true;
+                btnModern.className = "btn-tactical-absen";
+            }
+            if (btnModernText) btnModernText.innerText = "✓ Tugas Anda Telah Selesai";
         } 
         else if (data.attendanceCount === 1) {
-            if (btnLaporan) btnLaporan.classList.remove('d-none');
-            if (btnPulang) btnPulang.classList.remove('d-none');
-            
-            let durasiHTML = "";
-            if (data.firstInTime) {
-                const checkIn = new Date(data.firstInTime);
-                const diffMs = new Date() - checkIn;
-                const diffHrs = Math.floor(diffMs / 3600000);
-                const diffMins = Math.floor((diffMs % 3600000) / 60000);
-                durasiHTML = `<div class="mt-1 small text-primary fw-bold">Durasi Kerja: ${diffHrs}j ${diffMins}m</div>`;
+            if (modernShiftName) modernShiftName.innerText = `Dinas ${data.Shift} (Sedang Bertugas)`;
+            if (modernShiftBadge) {
+                modernShiftBadge.className = "badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50";
+                modernShiftBadge.innerText = data.Shift;
             }
-            statusEl.innerHTML = `<span class="text-success fw-bold">TUGAS AKTIF</span>${durasiHTML}`;
+            if (modernStatusPill) {
+                modernStatusPill.className = "badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 px-2 py-1";
+                modernStatusPill.innerText = "Aktif";
+            }
+            if (modernStatusSub) modernStatusSub.innerText = "Siap Pulang";
+
+            if (btnModern) {
+                btnModern.disabled = false;
+                btnModern.className = "btn-tactical-absen";
+                btnModern.style.background = "linear-gradient(135deg, #d97706 0%, #b45309 100%)";
+                btnModern.style.boxShadow = "0 10px 25px -4px rgba(217, 119, 6, 0.45)";
+            }
+            if (btnModernText) btnModernText.innerText = "Absen Pulang Sekarang";
         } 
         else {
-            if (btnMasuk) btnMasuk.classList.remove('d-none');
-            statusEl.innerHTML = '<span class="text-warning fw-bold">MENUNGGU MASUK</span>';
+            if (modernShiftName) modernShiftName.innerText = `Dinas ${data.Shift}`;
+            if (modernShiftBadge) {
+                modernShiftBadge.className = "badge bg-success bg-opacity-25 text-success border border-success border-opacity-50";
+                modernShiftBadge.innerText = data.Shift;
+            }
+            if (modernStatusPill) {
+                modernStatusPill.className = "badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-1";
+                modernStatusPill.innerText = "Valid";
+            }
+            if (modernStatusSub) modernStatusSub.innerText = "Siap Absen";
+
+            if (btnModern) {
+                btnModern.disabled = false;
+                btnModern.className = "btn-tactical-absen";
+                btnModern.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+                btnModern.style.boxShadow = "0 10px 25px -4px rgba(16, 185, 129, 0.45)";
+            }
+            if (btnModernText) btnModernText.innerText = "Absen Masuk Sekarang";
         }
     }
 
@@ -6393,6 +6696,212 @@ function displayRosterDetails(data) {
     renderCardsWithActual(localLogs);
   }
 }
+
+// =========================================================
+    // HELPER SEC-OPS: VERIFIKASI TERTUTUP, JAM & GAMIFIKASI
+    // =========================================================
+
+    // 1. Autocomplete pencarian Nama Personil (NIK Disembunyikan Total)
+    function handleAutocompleteSecureNama(input) {
+      const val = (input.value || "").toString().trim().toUpperCase();
+      const wrapper = input.closest('.autocomplete-wrapper');
+      if (!wrapper) return;
+      const list = document.getElementById('listHomeSearchSecure') || wrapper.querySelector('.autocomplete-items');
+      if (!list) return;
+
+      list.innerHTML = "";
+      if (!val || val.length < 1) {
+        list.classList.add('d-none');
+        return;
+      }
+
+      // Ambil daftar unik nama dari sheet JADWAL
+      const seenNiks = new Set();
+      const sourcePersonil = [];
+      (masterData.jadwal || []).forEach(j => {
+        const nikStr = (j.NIK || "").toString().trim();
+        if (nikStr && !seenNiks.has(nikStr)) {
+          seenNiks.add(nikStr);
+          sourcePersonil.push({
+            NIK: nikStr,
+            Nama: (j.Nama || "-").toString().trim(),
+            Wilayah: (j.Wilayah || "-").toString().trim()
+          });
+        }
+      });
+
+      const matches = sourcePersonil.filter(p => p.Nama.toUpperCase().includes(val));
+
+      if (matches.length === 0) {
+        list.classList.add('d-none');
+        return;
+      }
+
+      list.classList.remove('d-none');
+      matches.slice(0, 8).forEach(p => {
+        const itemDiv = document.createElement("DIV");
+        // HANYA MENAMPILKAN NAMA DAN WILAYAH (NIK TIDAK PERNAH DIMUNCULKAN DI LAYAR)
+        itemDiv.innerHTML = `<strong>${p.Nama}</strong> <small class="text-muted">• ${p.Wilayah}</small>`;
+        itemDiv.onclick = () => {
+          input.value = p.Nama;
+          list.classList.add('d-none');
+          // NIK disimpan di memori sistem secara tersembunyi untuk validasi absen
+          searchPersonilRealtime(p.NIK);
+        };
+        list.appendChild(itemDiv);
+      });
+    }
+
+    // 2. Eksekusi Tombol Presensi Taktis
+    function handleModernAbsenClick() {
+        if (!curAbsen || !curAbsen.NIK) {
+            return Swal.fire("Verifikasi NIK", "Silakan masukkan NIK Anda terlebih dahulu.", "warning");
+        }
+        if (curAbsen.attendanceCount === 1) {
+            openAbsenForm('PULANG');
+        } else {
+            openAbsenForm('MASUK');
+        }
+    }
+
+    // 3. Akses Cepat Lapor Insiden dengan Proteksi NIK
+    function triggerLaporanSecure() {
+        if (curAbsen && curAbsen.NIK) {
+            openLaporanForm();
+        } else {
+            Swal.fire({
+                title: "Verifikasi Diperlukan",
+                text: "Silakan masukkan NIK Anda pada kolom atas terlebih dahulu untuk membuat laporan pos.",
+                icon: "info",
+                confirmButtonColor: "#064e3b"
+            });
+        }
+    }
+
+    // Mesin Penghitung Ranking Kedisiplinan & Audit Presensi Berjalan
+    function updateModernStreakGamification(nik, wilayah) {
+      const now = new Date();
+      const dNow = now.getDate();
+      const mNow = now.getMonth() + 1;
+      const yNow = now.getFullYear();
+      const targetNik = (nik || "").toString().trim();
+
+      // Panggil backend getActualAbsenPersonil agar data sinkron dengan Arsip_Absensi
+      if (typeof google !== 'undefined' && google.script && google.script.run && typeof google.script.run.getActualAbsenPersonil === 'function') {
+        google.script.run
+          .withSuccessHandler(res => {
+            renderStreakWithActualData(targetNik, wilayah, res.success ? res.actualLogs : {});
+          })
+          .withFailureHandler(() => {
+            renderStreakWithActualData(targetNik, wilayah, {});
+          })
+          .getActualAbsenPersonil(targetNik, mNow, yNow);
+      } else {
+        renderStreakWithActualData(targetNik, wilayah, {});
+      }
+    }
+
+    function renderStreakWithActualData(nik, wilayah, actualLogs) {
+      const now = new Date();
+      const dNow = now.getDate();
+      const mNow = now.getMonth() + 1;
+      const yNow = now.getFullYear();
+
+      // 1. Ambil jadwal personil terpilih
+      const jadwalPersonil = (masterData.jadwal || []).find(j => 
+        (j.NIK || "").toString().trim() === nik && 
+        parseInt(j.Bulan, 10) === mNow && 
+        parseInt(j.Tahun, 10) === yNow
+      );
+
+      let totalWajibDinas = 0;
+      let totalAbsenMasuk = 0;
+      let totalAbsenPulang = 0;
+      let totalTidakMasuk = 0;
+      let totalTidakPulang = 0;
+
+      if (jadwalPersonil) {
+        for (let d = 1; d <= dNow; d++) {
+          const shiftPlan = (jadwalPersonil['D' + d] || "OFF").toString().trim().toUpperCase();
+          const isDinas = shiftPlan !== "OFF" && shiftPlan !== "";
+          const log = actualLogs['D' + d];
+
+          if (isDinas) {
+            totalWajibDinas++;
+            if (log && log.adaAbsen) {
+              totalAbsenMasuk++;
+              if (log.jamPulang && log.jamPulang !== "-") {
+                totalAbsenPulang++;
+              } else {
+                // Hari sebelum hari ini yang tidak klik pulang dihitung tidak absen pulang
+                if (d < dNow) totalTidakPulang++;
+              }
+            } else {
+              // Terjadwal dinas tapi tidak ada log masuk
+              if (d < dNow) totalTidakMasuk++;
+            }
+          }
+        }
+      }
+
+      // Hitung persentase kedisiplinan nyata
+      const skorDisiplin = totalWajibDinas > 0 ? Math.min(100, Math.round((totalAbsenMasuk / totalWajibDinas) * 100)) : 100;
+
+      // 2. Hitung Peringkat di Unit/Wilayah yang Sama
+      const wilTarget = (wilayah || "").toString().trim().toUpperCase();
+      const seUnit = (masterData.jadwal || []).filter(j => 
+        parseInt(j.Bulan, 10) === mNow && 
+        parseInt(j.Tahun, 10) === yNow && 
+        (j.Wilayah || "").toString().trim().toUpperCase() === wilTarget
+      );
+      const totalPersonilUnit = seUnit.length > 0 ? seUnit.length : (masterData.personil || []).length;
+      
+      // Ranking sederhana berbasis skor disiplin personil
+      let myRank = 1;
+      if (skorDisiplin < 100) {
+        myRank = Math.min(totalPersonilUnit, Math.max(2, Math.ceil((100 - skorDisiplin) / 10)));
+      }
+
+      // 3. Render ke Tampilan Kartu Sentinel
+      const titleEl = document.getElementById('modernStreakTitle');
+      const rankBadge = document.getElementById('modernPersonilRank');
+      const descEl = document.getElementById('modernStreakDesc');
+      const xpEl = document.getElementById('modernStreakXp');
+      const fillEl = document.getElementById('modernStreakFill');
+      const pctEl = document.getElementById('modernRankPct');
+      const nextRankEl = document.getElementById('modernRankNext');
+      const noteEl = document.getElementById('modernRankDetailNote');
+
+      if (titleEl) titleEl.innerText = "Sentinel Discipline";
+      if (rankBadge) {
+        rankBadge.innerText = `RANK #${myRank} dari ${totalPersonilUnit}`;
+        rankBadge.className = myRank <= 3 ? "badge bg-warning text-dark fw-bolder px-2 py-1 shadow-sm" : "badge bg-secondary text-white fw-bold px-2 py-1";
+      }
+      
+      // Sinkron dengan angka aktual Roster Bulanan
+      if (descEl) descEl.innerText = `Kehadiran: ${totalAbsenMasuk} Hadir dari ${totalWajibDinas} Hari Dinas (s/d Tgl ${dNow})`;
+      if (xpEl) xpEl.innerText = `${skorDisiplin}% Disiplin`;
+      if (pctEl) pctEl.innerText = `${skorDisiplin}%`;
+      if (fillEl) fillEl.style.width = `${skorDisiplin}%`;
+      if (nextRankEl) nextRankEl.innerText = skorDisiplin === 100 ? "Status: Disiplin Sempurna" : `Skor Presensi Unit ${wilTarget || "Operasional"}`;
+
+      // Penggantian teks bertanda bintang sesuai permintaan
+      if (noteEl) {
+        noteEl.innerHTML = `*Tidak Absen: <b class="text-danger">${totalTidakMasuk}x</b> Tidak Masuk &nbsp;|&nbsp; <b class="text-warning">${totalTidakPulang}x</b> Tidak Pulang (s/d Tgl ${dNow})`;
+      }
+    }
+
+    // 5. Jam Digital Real Time
+    function updateModernClockDisplay() {
+        const n = new Date();
+        const clockEl = document.getElementById('modernClock');
+        const dateEl = document.getElementById('modernTglHariIni');
+
+        if (clockEl) clockEl.innerText = n.toLocaleTimeString('id-ID', { hour12: false });
+        if (dateEl) dateEl.innerText = n.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    setInterval(updateModernClockDisplay, 1000);
+    updateModernClockDisplay();
 </script>
 </body>
 </html>
