@@ -3644,19 +3644,31 @@ function getKTPDigital() {
       return { start: winStart, end: winEnd };
     }
 
-    // Parsing Timestamp Laporan yang Kebal Perbedaan Format String / Objek Date
+    // Parsing Waktu Murni Lokal (Anti Bug Pergeseran Jam UTC / WIB)
     function parseReportTimestamp(rawTime) {
       if (!rawTime) return null;
-      if (rawTime instanceof Date) return rawTime;
-      const str = String(rawTime).trim().replace('Z', '').replace(' ', 'T');
-      const d = new Date(str);
-      if (!isNaN(d.getTime())) return d;
-      
+      if (rawTime instanceof Date) return isNaN(rawTime.getTime()) ? null : rawTime;
+
+      // Prioritaskan ekstraksi langsung angka [Tahun, Bulan, Tanggal, Jam, Menit, Detik]
       const m = String(rawTime).match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
       if (m) {
-        return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10), parseInt(m[4], 10), parseInt(m[5], 10), parseInt(m[6] || 0, 10));
+        return new Date(
+          parseInt(m[1], 10),
+          parseInt(m[2], 10) - 1,
+          parseInt(m[3], 10),
+          parseInt(m[4], 10),
+          parseInt(m[5], 10),
+          parseInt(m[6] || 0, 10)
+        );
       }
-      return null;
+
+      const d = new Date(rawTime);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    // Buat alias agar pemanggilan parseLocalTimestamp maupun parseReportTimestamp sama-sama bekerja
+    function parseLocalTimestamp(rawTime) {
+      return parseReportTimestamp(rawTime);
     }
 
     // =========================================================================
@@ -5574,13 +5586,13 @@ function searchPersonilLaporan(nik) {
 // ==========================================
 // FITUR BARU: MODUL LAPORAN HARIAN BUJP
 // ==========================================
-// Buka Formulir Laporan dengan Pengecekan Jeda 1 Jam (60 Menit) & Update Bar Chart
+// Buka Formulir Laporan dengan Pengecekan Jeda 1 Jam yang Kebal Timezone Bug
 function openLaporanForm() {
   if (!curAbsen || !curAbsen.NIK) {
     return Swal.fire("Akses Ditolak", "Data personil tidak ditemukan.", "error");
   }
 
-  // Double Check: Pastikan bukan personil OFF
+  // Pastikan personil tidak berstatus libur (OFF)
   if (curAbsen.Shift === 'OFF') {
     return Swal.fire({
       title: "Akses Ditolak",
@@ -5590,30 +5602,37 @@ function openLaporanForm() {
   }
 
   const now = new Date();
-  const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
   const targetNik = (curAbsen.NIK || "").toString().trim();
+  const opWin = typeof getOperationalWindow === 'function' ? getOperationalWindow() : { start: new Date(now.getTime() - 24*3600*1000), end: new Date(now.getTime() + 24*3600*1000) };
 
-  // 1. Hitung seluruh laporan yang sudah dibuat personil ini hari ini
+  // 1. Ambil laporan personil ini yang berada di dalam jendela operasional dinas aktif (06:00 s/d 06:00)
   const myReportsToday = (masterData.laporanHarian || []).filter(l => {
     const lNik = (l.NIK || "").toString().trim();
-    const lTgl = (l.TANGGAL || l.WAKTU_INPUT || "").toString().substring(0, 10);
-    return lNik === targetNik && lTgl === todayStr;
+    if (lNik !== targetNik) return false;
+    const rDate = parseLocalTimestamp(l.WAKTU_INPUT || l.TANGGAL);
+    if (!rDate) return false;
+    return rDate.getTime() >= opWin.start.getTime() && rDate.getTime() < opWin.end.getTime();
   });
 
-  // Urutkan dari yang terbaru ke terlama
-  myReportsToday.sort((a, b) => new Date(b.WAKTU_INPUT) - new Date(a.WAKTU_INPUT));
+  // Urutkan laporan dari yang paling baru ke yang paling lama
+  myReportsToday.sort((a, b) => {
+    const dateA = parseLocalTimestamp(a.WAKTU_INPUT || a.TANGGAL);
+    const dateB = parseLocalTimestamp(b.WAKTU_INPUT || b.TANGGAL);
+    return dateB.getTime() - dateA.getTime();
+  });
 
-  // 2. Pengecekan Jeda Minimal 1 Jam (60 Menit)
+  // 2. Validasi Jeda 1 Jam (60 Menit) Menggunakan Waktu Nyata Lokal
   if (myReportsToday.length > 0) {
     const lastReport = myReportsToday[0];
-    const lastTime = new Date(lastReport.WAKTU_INPUT);
+    const lastTime = parseLocalTimestamp(lastReport.WAKTU_INPUT || lastReport.TANGGAL);
 
-    if (!isNaN(lastTime.getTime())) {
+    if (lastTime) {
       const diffMs = now.getTime() - lastTime.getTime();
-      const diffMins = diffMs / 60000;
+      const diffMins = Math.floor(diffMs / 60000);
 
-      if (diffMins < 60) {
-        const sisaMenit = Math.ceil(60 - diffMins);
+      // Jika laporan terakhir masih di bawah 60 menit dan bukan waktu masa depan
+      if (diffMins >= 0 && diffMins < 60) {
+        const sisaMenit = 60 - diffMins;
         const nextAllowed = new Date(lastTime.getTime() + 60 * 60 * 1000);
         const jamBukaStr = String(nextAllowed.getHours()).padStart(2, '0') + ":" + String(nextAllowed.getMinutes()).padStart(2, '0');
 
@@ -5623,7 +5642,7 @@ function openLaporanForm() {
             <div class="text-start small">
               <p>Ketentuan laporan pos dilakukan <b>setiap 1 jam sekali</b>.</p>
               <div class="alert alert-warning py-2 px-3 fw-bold mb-2">
-                <i class="fas fa-hourglass-half me-1"></i> Baru melapor ${Math.floor(diffMins)} menit yang lalu.
+                <i class="fas fa-hourglass-half me-1"></i> Baru melapor <b>${diffMins} menit</b> yang lalu.
               </div>
               <p class="mb-0">Silakan kirim laporan berikutnya setelah pukul <b>${jamBukaStr} WIB</b> (menunggu sekitar <b>${sisaMenit} menit</b> lagi).</p>
             </div>
@@ -5644,7 +5663,6 @@ function openLaporanForm() {
 
   if (badgeLap) badgeLap.innerText = `${countLap} Laporan`;
   
-  // Asumsi target pos: 8-12 jam dinas = target 8 laporan (1 tiap jam)
   const targetLaporanShift = 8;
   const progressPct = Math.min(100, Math.round((countLap / targetLaporanShift) * 100));
 
@@ -5655,9 +5673,12 @@ function openLaporanForm() {
       : "progress-bar bg-info progress-bar-striped progress-bar-animated";
   }
 
-  if (myReportsToday.length > 0 && myReportsToday[0].WAKTU_INPUT) {
-    const jamTerakhir = myReportsToday[0].WAKTU_INPUT.substring(11, 16);
-    if (lastTimeText) lastTimeText.innerText = `Laporan Terakhir: Pukul ${jamTerakhir} WIB`;
+  if (myReportsToday.length > 0) {
+    const rDate = parseLocalTimestamp(myReportsToday[0].WAKTU_INPUT || myReportsToday[0].TANGGAL);
+    if (rDate) {
+      const jamStr = String(rDate.getHours()).padStart(2, '0') + ":" + String(rDate.getMinutes()).padStart(2, '0');
+      if (lastTimeText) lastTimeText.innerText = `Laporan Terakhir: Pukul ${jamStr} WIB`;
+    }
   } else {
     if (lastTimeText) lastTimeText.innerText = "Laporan Terakhir: Belum Ada";
   }
