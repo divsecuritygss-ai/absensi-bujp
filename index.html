@@ -1580,6 +1580,54 @@
       font-size: 1.1rem;
       flex-shrink: 0;
     }
+
+    /* =========================================================
+       PRINT STYLESHEET UNTUK CETAK PDF ROSTER RESMI
+       ========================================================= */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #modalRosterPersonil, 
+      #modalRosterPersonil * {
+        visibility: visible !important;
+      }
+      #modalRosterPersonil {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      .modal-dialog {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+      }
+      .modal-header,
+      .modal-footer,
+      #rosterLoginFormBox,
+      button {
+        display: none !important;
+      }
+      .modal-content {
+        border: none !important;
+        box-shadow: none !important;
+      }
+      #rosterResultBox {
+        display: block !important;
+      }
+      .badge {
+        border: 1px solid #334155 !important;
+        color: #000000 !important;
+        background: transparent !important;
+      }
+      #rosterDaysGrid .col {
+        break-inside: avoid;
+      }
+    }
   </style>
   </head>
 <body>
@@ -2076,22 +2124,57 @@
                   <h5 class="fw-bold text-primary m-0" id="rosterCardNama"></h5>
                   <small class="text-muted fw-bold" id="rosterCardMeta"></small>
                 </div>
-                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-bold" onclick="resetRosterView()">
-                  <i class="fas fa-arrow-left me-1"></i> Cari Personil Lain
-                </button>
+                <div class="d-flex align-items-center gap-2">
+                  <!-- Tombol Cetak PDF Resmi -->
+                  <button type="button" class="btn btn-danger btn-sm rounded-pill fw-bold shadow-sm" onclick="handlePrintRosterPdf()">
+                    <i class="fas fa-file-pdf me-1"></i> CETAK PDF
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-bold" onclick="resetRosterView()">
+                    <i class="fas fa-arrow-left me-1"></i> Cari Personil Lain
+                  </button>
+                </div>
               </div>
 
               <!-- Statistik Singkat Shift Personil -->
               <div class="row g-2 mb-3 text-center" id="rosterSummaryStats"></div>
 
               <!-- Kalender Grid Roster Tanggal 1 s/d 31 -->
-              <div class="p-3 bg-light rounded-3 border">
+              <div class="p-3 bg-light rounded-3 border mb-3">
                 <div class="fw-bold small text-muted text-uppercase mb-2 d-flex justify-content-between">
                   <span><i class="fas fa-calendar-alt me-1"></i> Kalender Dinas Tanggal 1 s/d 31</span>
                   <span id="rosterMonthLabel" class="text-primary"></span>
                 </div>
                 <div class="row row-cols-3 row-cols-sm-4 row-cols-md-7 g-2" id="rosterDaysGrid"></div>
               </div>
+
+              <!-- Kolom Pengesahan & Tanda Tangan Resmi (Cetak / Audit PDF) -->
+              <div class="p-3 bg-white rounded-3 border" id="rosterSignatureSection">
+                <div class="d-flex justify-content-between text-center mt-3 pt-2">
+                  <div style="width: 45%;">
+                    <small class="text-muted fw-bold d-block mb-1 text-uppercase" style="font-size: 0.7rem;">Pemilik Absensi (Personil):</small>
+                    <div style="height: 65px; border-bottom: 1.5px dashed #94a3b8; display: flex; align-items: flex-end; justify-content: center;">
+                      <small class="text-muted fst-italic" style="font-size: 0.65rem;">( Tanda Tangan / Verifikasi )</small>
+                    </div>
+                    <strong class="d-block mt-2 text-dark" id="signPersonilNama" style="font-size: 0.85rem;">-</strong>
+                    <small class="text-muted d-block" id="signPersonilNik" style="font-size: 0.7rem;">NIK: -</small>
+                  </div>
+
+                  <div style="width: 45%;">
+                    <small class="text-muted fw-bold d-block mb-1 text-uppercase" style="font-size: 0.7rem;">Penanggung Jawab BUJP Mitra:</small>
+                    <div style="height: 65px; border-bottom: 1.5px dashed #94a3b8; display: flex; align-items: flex-end; justify-content: center;">
+                      <small class="text-muted fst-italic" style="font-size: 0.65rem;">( Cap &amp; Tanda Tangan Supervisor )</small>
+                    </div>
+                    <strong class="d-block mt-2 text-dark" id="signBujpName" style="font-size: 0.85rem;">Pimpinan Unit / Supervisor</strong>
+                    <small class="text-muted d-block" id="signBujpMeta" style="font-size: 0.7rem;">BUJP Mitra Penugasan</small>
+                  </div>
+                </div>
+                <div class="text-center mt-3 pt-2 border-top">
+                  <small class="text-muted" style="font-size: 0.65rem;">
+                    *Dokumen ini merupakan rekaman audit elektronik sah sistem Absensi Terintegrasi BUJP. Dicetak otomatis pada periode verifikasi tutup jadwal (Tanggal 1–5).
+                  </small>
+                </div>
+              </div>
+
             </div>
           </div>
           <div class="modal-footer bg-light py-2 px-3">
@@ -6332,6 +6415,77 @@ function openModalRosterPersonil() {
   new bootstrap.Modal(modalEl).show();
 }
 
+// Variabel penyimpan cache data personil yang sedang aktif dibuka rosternya
+let curRosterOpenedData = null;
+
+// Validasi periode cetak & Cetak Roster ke format PDF
+function handlePrintRosterPdf() {
+  if (!curRosterOpenedData) {
+    return Swal.fire("Data Kosong", "Silakan muat data roster terlebih dahulu.", "warning");
+  }
+
+  const now = new Date();
+  const curTgl = now.getDate();
+  const curBulan = now.getMonth() + 1; // 1-12
+  const curTahun = now.getFullYear();
+
+  const targetBulan = parseInt(curRosterOpenedData.bulan, 10);
+  const targetTahun = parseInt(curRosterOpenedData.tahun, 10);
+
+  // Menghitung bulan target berikutnya (bulan di mana cetak diperbolehkan)
+  let allowedMonth = targetBulan + 1;
+  let allowedYear = targetTahun;
+  if (allowedMonth > 12) {
+    allowedMonth = 1;
+    allowedYear += 1;
+  }
+
+  const namaBulanList = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  const targetBulanNama = namaBulanList[targetBulan - 1];
+  const allowedBulanNama = namaBulanList[allowedMonth - 1];
+
+  // =========================================================================
+  // ATURAN VALIDASI CETAK: HANYA TANGGAL 1 - 5 PADA BULAN BERIKUTNYA
+  // =========================================================================
+  const isCorrectPeriod = (curBulan === allowedMonth && curTahun === allowedYear);
+  const isDateAllowed = (curTgl >= 1 && curTgl <= 5);
+
+  // Jika belum memenuhi ketentuan tanggal 1 - 5 pada bulan berikutnya
+  if (!(isCorrectPeriod && isDateAllowed)) {
+    return Swal.fire({
+      title: "Cetak Belum Diizinkan",
+      html: `
+        <div class="text-start small">
+          <p>Pencetakan Roster Resmi periode <b>${targetBulanNama} ${targetTahun}</b> hanya dapat dilakukan saat tutup jadwal lengkap.</p>
+          <div class="alert alert-warning py-2 px-3 fw-bold mb-2">
+            <i class="fas fa-calendar-check me-1"></i> Jendela Cetak: Tanggal 1 s/d 5 ${allowedBulanNama} ${allowedYear}
+          </div>
+          <p class="text-muted mb-0">Hari ini: <b>${curTgl} ${namaBulanList[curBulan - 1]} ${curTahun}</b>. Silakan kembali pada tanggal 1–5 ${allowedBulanNama} untuk mengunduh laporan sah bertandatangan.</p>
+        </div>
+      `,
+      icon: "warning",
+      confirmButtonColor: "#064e3b"
+    });
+  }
+
+  // Jika tanggal valid (1 s/d 5 bulan berikutnya), isi nama personil di kolom tanda tangan lalu cetak
+  if (document.getElementById('signPersonilNama')) {
+    document.getElementById('signPersonilNama').innerText = curRosterOpenedData.nama;
+  }
+  if (document.getElementById('signPersonilNik')) {
+    document.getElementById('signPersonilNik').innerText = "NIK: " + curRosterOpenedData.nik;
+  }
+  if (document.getElementById('signBujpName')) {
+    document.getElementById('signBujpName').innerText = `Penanggung Jawab ${curRosterOpenedData.bujp}`;
+  }
+  if (document.getElementById('signBujpMeta')) {
+    document.getElementById('signBujpMeta').innerText = `Wilayah: ${curRosterOpenedData.wilayah}`;
+  }
+
+  // Buka dialog Cetak / Save as PDF browser
+  window.print();
+}
+
 function resetRosterView() {
   const formBox = document.getElementById('rosterLoginFormBox');
   const resultBox = document.getElementById('rosterResultBox');
@@ -6473,6 +6627,7 @@ function handleLoginRoster(e) {
 }
 
 function displayRosterDetails(data) {
+  curRosterOpenedData = data;
   document.getElementById('rosterLoginFormBox').classList.add('d-none');
   document.getElementById('rosterResultBox').classList.remove('d-none');
 
