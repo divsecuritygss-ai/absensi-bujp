@@ -1867,35 +1867,49 @@
 
               <!-- Kolom Kanan: Gamifikasi Kedisiplinan & Dua Tombol Pintas -->
               <div class="col-lg-6 d-flex flex-column justify-content-between">
-                <!-- Kartu Gamifikasi & Ranking Disiplin Berjalan -->
+                <!-- KARTU TINGKAT KEHADIRAN BULANAN (3 SEGMEN WARNA MENUJU 100%) -->
                 <div class="streak-card mb-3 flex-grow-1 d-flex flex-column justify-content-between">
                   <div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
                       <div class="d-flex align-items-center gap-2">
-                        <span style="font-size: 1.35rem;">🏆</span>
+                        <span style="font-size: 1.35rem;">📊</span>
                         <div>
                           <div class="d-flex align-items-center gap-2">
-                            <span class="fw-bold small" id="modernStreakTitle">Sentinel Discipline</span>
+                            <h6 class="fw-bold m-0" id="modernStreakTitle">Tingkat Kehadiran Bulanan</h6>
                             <span class="badge bg-warning text-dark fw-bolder px-2 py-1 shadow-sm" id="modernPersonilRank" style="font-size: 0.65rem;">RANK -</span>
                           </div>
-                          <small class="text-muted d-block" id="modernStreakDesc" style="font-size: 0.68rem;">Kedisiplinan Kehadiran Tugas</small>
+                          <small class="text-muted d-block" id="modernStreakDesc" style="font-size: 0.68rem;">Pencapaian Dinas terhadap Target Akhir Bulan</small>
                         </div>
                       </div>
                       <div class="text-end">
-                        <span class="text-success fw-bold small" id="modernStreakXp">100% Disiplin</span>
-                        <small class="text-muted d-block" style="font-size: 0.65rem;" id="modernStreakLvl">Skor Kehadiran</small>
+                        <span class="text-success fw-bold small" id="modernStreakXp">0% Tercapai</span>
+                        <small class="text-muted d-block" style="font-size: 0.65rem;" id="modernStreakTargetBulan">Target: 0 Dinas</small>
                       </div>
                     </div>
+
+                    <!-- Keterangan Status Rasio Hari Ini vs Target Akhir Bulan -->
                     <div class="d-flex justify-content-between align-items-center text-muted mb-1" style="font-size: 0.68rem;">
-                      <span id="modernRankNext">Peringkat Kehadiran Unit</span>
-                      <span id="modernRankPct" class="fw-bold text-success">100%</span>
+                      <span id="modernRankNext">Target Hari Ini: 0%</span>
+                      <span id="modernRankPct" class="fw-bold text-primary">Target Akhir Bulan: 100%</span>
                     </div>
-                    <div class="streak-progress-bar mb-2">
-                      <div class="streak-progress-fill" id="modernStreakFill" style="width: 100%;"></div>
+
+                    <!-- PROGRESS BAR 3 WARNA: AKTUAL (HIJAU), PLAN TERLEWAT (KUNING), SISA DINAS (BIRU) -->
+                    <div class="progress mb-2" style="height: 10px; border-radius: 9999px; background: rgba(0, 0, 0, 0.08); overflow: hidden;">
+                      <div id="barActual" class="progress-bar bg-success" role="progressbar" style="width: 0%;" title="Aktual Hadir"></div>
+                      <div id="barPlanGap" class="progress-bar bg-warning" role="progressbar" style="width: 0%;" title="Target Hari Ini Belum Hadir"></div>
+                      <div id="barPlanRemaining" class="progress-bar bg-info" role="progressbar" style="width: 0%;" title="Sisa Rencana Dinas s/d Akhir Bulan"></div>
+                    </div>
+
+                    <!-- Legenda 3 Warna -->
+                    <div class="d-flex gap-3 text-muted justify-content-start flex-wrap mb-1" style="font-size: 0.65rem;">
+                      <span><i class="fas fa-circle text-success me-1"></i>Aktual: <b id="legendaAktual" class="text-dark">0</b></span>
+                      <span><i class="fas fa-circle text-warning me-1"></i>Belum Hadir: <b id="legendaGap" class="text-dark">0</b></span>
+                      <span><i class="fas fa-circle text-info me-1"></i>Sisa Jadwal: <b id="legendaSisa" class="text-dark">0</b></span>
                     </div>
                   </div>
+
                   <small class="text-muted fst-italic" style="font-size: 0.68rem;" id="modernRankDetailNote">
-                    *Peringkat dihitung otomatis dari rasio kehadiran terhadap jadwal dinas aktif bulan berjalan.
+                    *Tidak Absen: 0x Tidak Masuk | 0x Tidak Pulang
                   </small>
                 </div>
 
@@ -7288,46 +7302,63 @@ function displayRosterDetails(data) {
       const dNow = now.getDate();
       const mNow = now.getMonth() + 1;
       const yNow = now.getFullYear();
+      const totalDaysInMonth = new Date(yNow, mNow, 0).getDate();
 
-      // 1. Ambil jadwal personil terpilih
+      // 1. Ambil jadwal personil terpilih untuk bulan berjalan
       const jadwalPersonil = (masterData.jadwal || []).find(j => 
         (j.NIK || "").toString().trim() === nik && 
         parseInt(j.Bulan, 10) === mNow && 
         parseInt(j.Tahun, 10) === yNow
       );
 
-      let totalWajibDinas = 0;
-      let totalAbsenMasuk = 0;
+      let totalDinasSebulan = 0;       // Basis 100% Akhir Bulan
+      let targetDinasSdHariIni = 0;    // Target Keharusan s/d Hari Ini
+      let totalAbsenMasuk = 0;         // Realisasi Hadir Aktual
       let totalAbsenPulang = 0;
       let totalTidakMasuk = 0;
       let totalTidakPulang = 0;
 
       if (jadwalPersonil) {
-        for (let d = 1; d <= dNow; d++) {
+        for (let d = 1; d <= totalDaysInMonth; d++) {
           const shiftPlan = (jadwalPersonil['D' + d] || "OFF").toString().trim().toUpperCase();
           const isDinas = shiftPlan !== "OFF" && shiftPlan !== "";
           const log = actualLogs['D' + d];
 
+          // Hitung seluruh kewajiban dinas sebulan penuh (Basis 100%)
           if (isDinas) {
-            totalWajibDinas++;
-            if (log && log.adaAbsen) {
-              totalAbsenMasuk++;
-              if (log.jamPulang && log.jamPulang !== "-") {
-                totalAbsenPulang++;
+            totalDinasSebulan++;
+
+            // Evaluasi khusus hari berjalan s/d hari ini
+            if (d <= dNow) {
+              targetDinasSdHariIni++;
+
+              if (log && log.adaAbsen) {
+                totalAbsenMasuk++;
+                if (log.jamPulang && log.jamPulang !== "-") {
+                  totalAbsenPulang++;
+                } else {
+                  if (d < dNow) totalTidakPulang++;
+                }
               } else {
-                // Hari sebelum hari ini yang tidak klik pulang dihitung tidak absen pulang
-                if (d < dNow) totalTidakPulang++;
+                if (d < dNow) totalTidakMasuk++;
               }
-            } else {
-              // Terjadwal dinas tapi tidak ada log masuk
-              if (d < dNow) totalTidakMasuk++;
             }
           }
         }
       }
 
-      // Hitung persentase kedisiplinan nyata
-      const skorDisiplin = totalWajibDinas > 0 ? Math.min(100, Math.round((totalAbsenMasuk / totalWajibDinas) * 100)) : 100;
+      // =========================================================================
+      // KALKULASI 3 SEGMEN WARNA MENUJU 100% AKHIR BULAN
+      // =========================================================================
+      const gapHariIni = Math.max(0, targetDinasSdHariIni - totalAbsenMasuk);
+      const sisaDinasSebulan = Math.max(0, totalDinasSebulan - targetDinasSdHariIni);
+
+      // Persentase berbanding Total Dinas Sebulan Penuh
+      const basis = totalDinasSebulan > 0 ? totalDinasSebulan : 1;
+      const pctActual = Math.round((totalAbsenMasuk / basis) * 100);
+      const pctGap = Math.round((gapHariIni / basis) * 100);
+      const pctTargetHariIni = Math.round((targetDinasSdHariIni / basis) * 100);
+      const pctRemaining = Math.max(0, 100 - pctActual - pctGap);
 
       // 2. Hitung Peringkat di Unit/Wilayah yang Sama
       const wilTarget = (wilayah || "").toString().trim().toUpperCase();
@@ -7338,36 +7369,62 @@ function displayRosterDetails(data) {
       );
       const totalPersonilUnit = seUnit.length > 0 ? seUnit.length : (masterData.personil || []).length;
       
-      // Ranking sederhana berbasis skor disiplin personil
+      const rasioDisiplinBerjalan = targetDinasSdHariIni > 0 ? Math.round((totalAbsenMasuk / targetDinasSdHariIni) * 100) : 100;
       let myRank = 1;
-      if (skorDisiplin < 100) {
-        myRank = Math.min(totalPersonilUnit, Math.max(2, Math.ceil((100 - skorDisiplin) / 10)));
+      if (rasioDisiplinBerjalan < 100) {
+        myRank = Math.min(totalPersonilUnit, Math.max(2, Math.ceil((100 - rasioDisiplinBerjalan) / 10)));
       }
 
-      // 3. Render ke Tampilan Kartu Sentinel
+      // 3. Render ke Elemen DOM
       const titleEl = document.getElementById('modernStreakTitle');
       const rankBadge = document.getElementById('modernPersonilRank');
       const descEl = document.getElementById('modernStreakDesc');
       const xpEl = document.getElementById('modernStreakXp');
-      const fillEl = document.getElementById('modernStreakFill');
-      const pctEl = document.getElementById('modernRankPct');
+      const targetBulanEl = document.getElementById('modernStreakTargetBulan');
       const nextRankEl = document.getElementById('modernRankNext');
       const noteEl = document.getElementById('modernRankDetailNote');
 
-      if (titleEl) titleEl.innerText = "Sentinel Discipline";
+      // Elemen 3 Segmen Bar
+      const barActual = document.getElementById('barActual');
+      const barPlanGap = document.getElementById('barPlanGap');
+      const barPlanRemaining = document.getElementById('barPlanRemaining');
+
+      // Elemen Legenda Angka
+      const legActual = document.getElementById('legendaAktual');
+      const legGap = document.getElementById('legendaGap');
+      const legSisa = document.getElementById('legendaSisa');
+
+      if (titleEl) titleEl.innerText = "Tingkat Kehadiran Bulanan";
       if (rankBadge) {
         rankBadge.innerText = `RANK #${myRank} dari ${totalPersonilUnit}`;
         rankBadge.className = myRank <= 3 ? "badge bg-warning text-dark fw-bolder px-2 py-1 shadow-sm" : "badge bg-secondary text-white fw-bold px-2 py-1";
       }
-      
-      // Sinkron dengan angka aktual Roster Bulanan
-      if (descEl) descEl.innerText = `Kehadiran: ${totalAbsenMasuk} Hadir dari ${totalWajibDinas} Hari Dinas (s/d Tgl ${dNow})`;
-      if (xpEl) xpEl.innerText = `${skorDisiplin}% Disiplin`;
-      if (pctEl) pctEl.innerText = `${skorDisiplin}%`;
-      if (fillEl) fillEl.style.width = `${skorDisiplin}%`;
-      if (nextRankEl) nextRankEl.innerText = skorDisiplin === 100 ? "Status: Disiplin Sempurna" : `Skor Presensi Unit ${wilTarget || "Operasional"}`;
 
-      // Penggantian teks bertanda bintang sesuai permintaan
+      if (descEl) descEl.innerText = `Realisasi: ${totalAbsenMasuk} Hadir dari ${targetDinasSdHariIni} Hari Dinas (s/d Tgl ${dNow})`;
+      if (xpEl) xpEl.innerText = `${pctActual}% Tercapai`;
+      if (targetBulanEl) targetBulanEl.innerText = `Target: ${totalDinasSebulan} Hari Dinas (100%)`;
+      if (nextRankEl) nextRankEl.innerText = `Target Hari Ini: ${targetDinasSdHariIni} Dinas (${pctTargetHariIni}%)`;
+
+      // Set Lebar 3 Segmen Bar
+      if (barActual) {
+        barActual.style.width = pctActual + "%";
+        barActual.setAttribute('title', `Aktual Hadir: ${totalAbsenMasuk} Hari (${pctActual}%)`);
+      }
+      if (barPlanGap) {
+        barPlanGap.style.width = pctGap + "%";
+        barPlanGap.setAttribute('title', `Belum Hadir Hari Ini: ${gapHariIni} Hari (${pctGap}%)`);
+      }
+      if (barPlanRemaining) {
+        barPlanRemaining.style.width = pctRemaining + "%";
+        barPlanRemaining.setAttribute('title', `Sisa Rencana Dinas: ${sisaDinasSebulan} Hari (${pctRemaining}%)`);
+      }
+
+      // Set Angka Legenda
+      if (legActual) legActual.innerText = `${totalAbsenMasuk} Hari (${pctActual}%)`;
+      if (legGap) legGap.innerText = `${gapHariIni} Hari (${pctGap}%)`;
+      if (legSisa) legSisa.innerText = `${sisaDinasSebulan} Hari (${pctRemaining}%)`;
+
+      // Keterangan Audit Kedisiplinan
       if (noteEl) {
         noteEl.innerHTML = `*Tidak Absen: <b class="text-danger">${totalTidakMasuk}x</b> Tidak Masuk &nbsp;|&nbsp; <b class="text-warning">${totalTidakPulang}x</b> Tidak Pulang (s/d Tgl ${dNow})`;
       }
