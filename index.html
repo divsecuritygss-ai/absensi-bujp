@@ -1400,6 +1400,35 @@
       margin: 0 0 28px 0 !important;
     }
 
+    /* Kotak Pencarian Bersih Tanpa Garis Kaku */
+    .modern-clean-search {
+      background: rgba(0, 0, 0, 0.04);
+      border-radius: 9999px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+    }
+    .modern-clean-search input,
+    .modern-clean-search .input-group-text {
+      background: transparent !important;
+    }
+    [data-theme="dark"] .modern-clean-search {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    [data-theme="dark"] .modern-clean-search input {
+      color: #ffffff !important;
+    }
+
+    /* Kotak Jam Bersih Tanpa Garis Outline */
+    .modern-clean-clockbox {
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 14px;
+    }
+    [data-theme="dark"] .modern-clean-clockbox {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border: none !important;
+    }
+
     /* Kartu Konsol Mengikuti Sistem Tema Aktif */
     .glass-panel-tactical {
       background: var(--surface);
@@ -1691,7 +1720,7 @@
           <div class="glass-panel-tactical p-3 p-md-4">
             
             <!-- Baris Header Atas: Identitas & Form Pencarian Nama (NIK Terlindungi) -->
-            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom flex-wrap gap-2">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <div class="d-flex align-items-center gap-3">
                 <div class="secops-avatar-ring">
                   <i class="fas fa-user-shield"></i>
@@ -1705,12 +1734,12 @@
                 </div>
               </div>
 
-              <!-- Pencarian Nama Otomatis (Hanya menampilkan Nama & Wilayah, NIK Disembunyikan) -->
+              <!-- Pencarian Nama Otomatis (Garis Border Dihilangkan) -->
               <div class="d-flex align-items-center gap-2">
                 <div class="autocomplete-wrapper" style="min-width: 260px;">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light border-subtle text-muted"><i class="fas fa-search"></i></span>
-                    <input type="text" id="inputNik" class="form-control form-control-sm rounded-end fw-bold" placeholder="Ketik Nama Personil..." onkeyup="handleAutocompleteSecureNama(this)" autocomplete="off">
+                  <div class="input-group input-group-sm modern-clean-search">
+                    <span class="input-group-text border-0 text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" id="inputNik" class="form-control form-control-sm border-0 fw-bold" placeholder="Ketik Nama Personil..." onkeyup="handleAutocompleteSecureNama(this)" autocomplete="off">
                   </div>
                   <div id="listHomeSearchSecure" class="autocomplete-items d-none"></div>
                 </div>
@@ -1733,9 +1762,9 @@
             <!-- Grid 2 Kolom Sejajar: Proporsional di Layar Lebar, Responsif di Mobile -->
             <div class="row g-3 align-items-stretch">
               
-              <!-- Kolom Kiri: Jam Taktis, Status Roster & Tombol Presensi -->
+              <!-- Kolom Kiri: Jam Taktis (Border Dihilangkan, Menyatu Rapi) -->
               <div class="col-lg-6 d-flex flex-column justify-content-between">
-                <div class="p-3 rounded-3 mb-3 border bg-light bg-opacity-50">
+                <div class="p-3 rounded-3 mb-3 modern-clean-clockbox">
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <div>
                       <small class="text-muted fw-bold d-block" id="modernTglHariIni" style="font-size: 0.75rem;">-</small>
