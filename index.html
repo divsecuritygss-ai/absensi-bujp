@@ -75,6 +75,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- CANVAS CONFETTI UNTUK SELEBRASI BIRDIE GOLF -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <style>
     /* ========================================================
        CSS FINAL: RATA KIRI-KANAN (ALIGNMENT SEMPURNA)
@@ -1420,6 +1422,11 @@
           <i class="fab fa-whatsapp me-1 text-success fs-6"></i>
           <span>Laporkan Gangguan</span>
         </a>
+        <!-- TOMBOL AKSES PORTAL ROSTER PERSONIL -->
+        <button class="btn btn-warning text-dark fw-bold btn-sm rounded-pill px-3 d-flex align-items-center shadow-sm" onclick="openModalRosterPersonil()">
+          <i class="fas fa-calendar-alt me-1"></i>
+          <span>ROSTER SAYA</span>
+        </button>
         <button id="btnLoginNav" class="btn btn-accent fw-bold rounded-pill px-4" style="background: var(--accent);" data-bs-toggle="modal" data-bs-target="#modalLogin">LOGIN ADMIN</button>
         <div id="userProfile" class="d-none d-flex align-items-center">
           <div class="text-white text-end me-3 d-none d-md-block">
@@ -1751,6 +1758,95 @@
 
       </div>
     </div> <!-- PENUTUP RESMI #view-home AGAR VIEW LOGIN TIDAK TERSEMBUNYI -->
+
+    <!-- MODAL PORTAL ROSTER MANDIRI PERSONIL (LOGIN NAMA & NIK) -->
+    <div class="modal fade" id="modalRosterPersonil" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title fw-bold m-0"><i class="fas fa-calendar-check me-2"></i>PORTAL ROSTER BULANAN PERSONIL</h5>
+            <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-3 p-md-4">
+            <!-- Form Login Roster -->
+            <div id="rosterLoginFormBox">
+              <div class="text-center mb-4">
+                <div class="bg-success bg-opacity-10 text-success d-inline-flex rounded-circle p-3 mb-2">
+                  <i class="fas fa-user-lock fa-2x"></i>
+                </div>
+                <h5 class="fw-bolder m-0 text-dark">Lihat Jadwal Dinas Mandiri</h5>
+                <small class="text-muted">Masukkan Nama Lengkap sebagai Username dan NIK sebagai Password</small>
+              </div>
+              <form onsubmit="handleLoginRoster(event)" class="row g-3">
+                <div class="col-md-6">
+                  <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Username (Nama Lengkap Dari Jadwal)</label>
+                  <div class="autocomplete-wrapper action-input-shell">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
+                      <input type="text" id="rosterUsername" class="form-control" placeholder="Ketik Nama atau NIK..." onkeyup="handleAutocompleteRoster(this, 'rosterPassword')" autocomplete="off" required>
+                    </div>
+                    <div id="listRosterSearch" class="autocomplete-items d-none"></div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Password (NIK Personil)</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-key text-muted"></i></span>
+                    <input type="password" id="rosterPassword" class="form-control" placeholder="Ketik NIK Anda (Wajib Manual)" autocomplete="current-password" required>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Periode Bulan</label>
+                  <select id="rosterMonth" class="form-select fw-bold">
+                    <option value="1">Januari</option><option value="2">Februari</option><option value="3">Maret</option>
+                    <option value="4">April</option><option value="5">Mei</option><option value="6">Juni</option>
+                    <option value="7">Juli</option><option value="8">Agustus</option><option value="9">September</option>
+                    <option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+                  </select>
+                </div>
+                <div class="col-6 col-md-3">
+                  <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Tahun</label>
+                  <input type="number" id="rosterYear" class="form-control fw-bold" value="2026">
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                  <button type="submit" class="btn btn-success w-100 py-2 fw-bold rounded-pill shadow-sm">
+                    <i class="fas fa-search me-1"></i> BUKA ROSTER SAYA
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Tampilan Kartu Hasil Roster -->
+            <div id="rosterResultBox" class="d-none">
+              <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
+                <div>
+                  <h5 class="fw-bold text-primary m-0" id="rosterCardNama"></h5>
+                  <small class="text-muted fw-bold" id="rosterCardMeta"></small>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-bold" onclick="resetRosterView()">
+                  <i class="fas fa-arrow-left me-1"></i> Cari Personil Lain
+                </button>
+              </div>
+
+              <!-- Statistik Singkat Shift Personil -->
+              <div class="row g-2 mb-3 text-center" id="rosterSummaryStats"></div>
+
+              <!-- Kalender Grid Roster Tanggal 1 s/d 31 -->
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="fw-bold small text-muted text-uppercase mb-2 d-flex justify-content-between">
+                  <span><i class="fas fa-calendar-alt me-1"></i> Kalender Dinas Tanggal 1 s/d 31</span>
+                  <span id="rosterMonthLabel" class="text-primary"></span>
+                </div>
+                <div class="row row-cols-3 row-cols-sm-4 row-cols-md-7 g-2" id="rosterDaysGrid"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light py-2 px-3">
+            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- MODAL POPUP LOGIN ADMINISTRATOR -->
     <div class="modal fade" id="modalLogin" tabindex="-1">
@@ -2371,7 +2467,7 @@ function getKTPDigital() {
         },
         "MALAM": {
           start: 18,      // Jam 18:00 | Pintu absen MASUK dibuka
-          end: 20,        // Jam 20:00 | Batas akhir absen MASUK
+          end: 21,        // Jam 20:00 | Batas akhir absen MASUK
           p_start: 7,     // Jam 07:00 | Pintu absen PULANG dibuka (Besok Pagi)
           p_end: 10,      // Jam 10:00 | Batas akhir absen PULANG
           min: 12,        // Durasi wajib kerja (19:00 - 07:00)
@@ -4843,7 +4939,10 @@ function searchPersonilLaporan(nik) {
                         <strong class="text-success">${jamFormat} WIB</strong>
                     </div>
                 `;
-                triggerSuccessFeedback("Absensi Berhasil Dicatat!", res.message || "Data kehadiran telah tersimpan aman di server.", metaReceipt);
+                // ⛳ CELEBRATION BIRDIE GOLF: ANIMASI CONFETTI & SOUND EFFECT INSTAN
+                playBirdieCelebration();
+
+                triggerSuccessFeedback("🎉 BERHASIL! (SELESAI)", res.message || "Data kehadiran telah tersimpan aman di server.", metaReceipt);
                 
                 if(curAbsen.attendanceCount === 1) {
                     document.getElementById('btnPulang').classList.add('d-none');
@@ -5824,6 +5923,475 @@ function generateRekapManualLengkap(targetShift, tipeAbsen = 'MASUK') {
             window.open("https://wa.me/?text=" + encodeURIComponent(pesan), '_blank');
         }
     });
+}
+
+// =========================================================================
+// ⛳ MODUL GAMIFIKASI: BIRDIE GOLF SOUND & CONFETTI ENGINE (WEB AUDIO API)
+// =========================================================================
+function playBirdieCelebration() {
+  // 1. Animasi Hujan Confetti Meriah
+  if (typeof confetti === 'function') {
+    confetti({
+      particleCount: 120,
+      spread: 80,
+      origin: { y: 0.6 },
+      colors: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6']
+    });
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 60,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 }
+      });
+      confetti({
+        particleCount: 60,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 }
+      });
+    }, 250);
+  }
+
+  // 2. Synthesized Birdie Fanfare & Applause Sound (Tanpa perlu file audio luar)
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    // Nada Kemenangan (Fanfare Arpeggio: C5 -> E5 -> G5 -> C6)
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.1);
+
+      gain.gain.setValueAtTime(0, ctx.currentTime + idx * 0.1);
+      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + idx * 0.1 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.1 + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime + idx * 0.1);
+      osc.stop(ctx.currentTime + idx * 0.1 + 0.4);
+    });
+
+    // Simulasi Tepuk Tangan Cepat (Noise Burst Filtered)
+    for (let i = 0; i < 18; i++) {
+      const bufferSize = ctx.sampleRate * 0.04;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = buffer.getChannelData(0);
+      for (let j = 0; j < bufferSize; j++) {
+        output[j] = Math.random() * 2 - 1;
+      }
+
+      const whiteNoise = ctx.createBufferSource();
+      whiteNoise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 800 + Math.random() * 400;
+
+      const clapGain = ctx.createGain();
+      const startTime = ctx.currentTime + 0.45 + (i * 0.045) + (Math.random() * 0.02);
+      clapGain.gain.setValueAtTime(0.18, startTime);
+      clapGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.04);
+
+      whiteNoise.connect(filter);
+      filter.connect(clapGain);
+      clapGain.connect(ctx.destination);
+
+      whiteNoise.start(startTime);
+      whiteNoise.stop(startTime + 0.05);
+    }
+  } catch (err) {
+    console.warn("Audio Context tidak didukung oleh browser ini:", err);
+  }
+}
+
+// =========================================================================
+// 📅 MODUL PORTAL ROSTER MANDIRI PERSONIL (NAMA & NIK)
+// =========================================================================
+function openModalRosterPersonil() {
+  const modalEl = document.getElementById('modalRosterPersonil');
+  if (!modalEl) return;
+
+  const now = new Date();
+  const mSelect = document.getElementById('rosterMonth');
+  const yInput = document.getElementById('rosterYear');
+  if (mSelect) mSelect.value = now.getMonth() + 1;
+  if (yInput) yInput.value = now.getFullYear();
+
+  resetRosterView();
+  new bootstrap.Modal(modalEl).show();
+}
+
+function resetRosterView() {
+  const formBox = document.getElementById('rosterLoginFormBox');
+  const resultBox = document.getElementById('rosterResultBox');
+  if (formBox) formBox.classList.remove('d-none');
+  if (resultBox) resultBox.classList.add('d-none');
+}
+
+// Autocomplete pencarian Nama Personil (NIK DILINDUNGI & TIDAK DIISI OTOMATIS)
+function handleAutocompleteRoster(input, targetPasswordId) {
+  const val = (input.value || "").toString().trim().toUpperCase();
+  const wrapper = input.closest('.autocomplete-wrapper');
+  if (!wrapper) return;
+  const list = wrapper.querySelector('.autocomplete-items');
+  if (!list) return;
+
+  list.innerHTML = "";
+  if (!val || val.length < 1) {
+    list.classList.add('d-none');
+    return;
+  }
+
+  // Ambil daftar unik nama personil dari sheet JADWAL
+  const seenNiks = new Set();
+  const sourceJadwal = [];
+  (masterData.jadwal || []).forEach(j => {
+    const nikStr = (j.NIK || "").toString().trim();
+    if (nikStr && !seenNiks.has(nikStr)) {
+      seenNiks.add(nikStr);
+      sourceJadwal.push({
+        NIK: nikStr,
+        Nama: (j.Nama || "-").toString().trim(),
+        BUJP: (j.BUJP || "-").toString().trim(),
+        Wilayah: (j.Wilayah || "-").toString().trim()
+      });
+    }
+  });
+
+  // Pencarian hanya mencocokkan Nama Lengkap
+  const matches = sourceJadwal.filter(p => {
+    const n = p.Nama.toUpperCase();
+    return n.includes(val);
+  });
+
+  if (matches.length === 0) {
+    list.classList.add('d-none');
+    return;
+  }
+
+  list.classList.remove('d-none');
+  matches.slice(0, 8).forEach(p => {
+    const itemDiv = document.createElement("DIV");
+    // NIK TIDAK DITAMPILKAN DI DROPDOWN SUPAYA TIDAK DISALAHGUNAKAN BUJP LAIN
+    itemDiv.innerHTML = `<strong>${p.Nama}</strong> <small class="text-muted">• ${p.Wilayah}</small>`;
+    itemDiv.onclick = () => {
+      input.value = p.Nama;
+      
+      // Kosongkan kolom Password dan arahkan kursor agar user mengetik NIK sendiri
+      const passInput = document.getElementById(targetPasswordId);
+      if (passInput) {
+        passInput.value = "";
+        passInput.focus();
+      }
+      list.classList.add('d-none');
+    };
+    list.appendChild(itemDiv);
+  });
+}
+
+// Verifikasi dan Buka Roster Mandiri langsung dari sheet JADWAL
+function handleLoginRoster(e) {
+  e.preventDefault();
+  const namaInput = document.getElementById('rosterUsername').value.trim().toUpperCase();
+  const nikInput = document.getElementById('rosterPassword').value.trim();
+  const bulan = parseInt(document.getElementById('rosterMonth').value, 10);
+  const tahun = parseInt(document.getElementById('rosterYear').value, 10);
+
+  if (!namaInput || !nikInput) {
+    return Swal.fire("Input Lengkap", "Silakan masukkan Nama Lengkap dan NIK.", "warning");
+  }
+
+  startLoading("MEMVERIFIKASI JADWAL...");
+
+  // 1. CARI LANGSUNG DARI SHEET JADWAL YANG ADA DI MEMORI
+  let matchJadwal = (masterData.jadwal || []).find(j => {
+    const rowNik = (j.NIK || "").toString().trim();
+    const rowNama = (j.Nama || "").toString().trim().toUpperCase();
+    const rowBulan = parseInt(j.Bulan, 10);
+    const rowTahun = parseInt(j.Tahun, 10);
+
+    return rowNik === nikInput && (rowNama === namaInput || rowNama.includes(namaInput)) && rowBulan === bulan && rowTahun === tahun;
+  });
+
+  if (matchJadwal) {
+    endLoading();
+    let dailyShift = {};
+    for (let d = 1; d <= 31; d++) {
+      dailyShift['D' + d] = (matchJadwal['D' + d] || "OFF").toString().trim().toUpperCase();
+    }
+
+    const rosterData = {
+      nik: matchJadwal.NIK,
+      nama: matchJadwal.Nama,
+      bujp: matchJadwal.BUJP,
+      wilayah: matchJadwal.Wilayah,
+      bulan: bulan,
+      tahun: tahun,
+      roster: dailyShift
+    };
+
+    displayRosterDetails(rosterData);
+    return;
+  }
+
+  // 2. JIKA BULAN BERBEDA DAN DATA BELUM DI-CACHE, PANGGIL BACKEND DENGAN AMAN
+  if (typeof google !== 'undefined' && google.script && google.script.run && typeof google.script.run.getRosterPersonil === 'function') {
+    google.script.run
+      .withSuccessHandler(res => {
+        endLoading();
+        if (res.success && res.data) {
+          displayRosterDetails(res.data);
+        } else {
+          Swal.fire("Data Tidak Ditemukan", res.message || "Nama dan NIK tidak cocok dengan jadwal bulan terpilih.", "error");
+        }
+      })
+      .withFailureHandler(err => {
+        endLoading();
+        Swal.fire("Koneksi Gagal", err.toString(), "error");
+      })
+      .getRosterPersonil(namaInput, nikInput, bulan, tahun);
+  } else {
+    endLoading();
+    Swal.fire({
+      title: "Jadwal Tidak Ditemukan",
+      html: `Nama <b>${namaInput}</b> dengan NIK <b>${nikInput}</b> tidak terdaftar pada sheet <b>JADWAL</b> untuk periode bulan ${bulan}/${tahun}. Pastikan penulisan NIK sudah sesuai.`,
+      icon: "warning",
+      confirmButtonColor: "#064e3b"
+    });
+  }
+}
+
+function displayRosterDetails(data) {
+  document.getElementById('rosterLoginFormBox').classList.add('d-none');
+  document.getElementById('rosterResultBox').classList.remove('d-none');
+
+  document.getElementById('rosterCardNama').innerHTML = `<i class="fas fa-id-badge me-2 text-success"></i>${data.nama} (${data.nik})`;
+  document.getElementById('rosterCardMeta').innerText = `BUJP: ${data.bujp} • Wilayah Kerja: ${data.wilayah}`;
+
+  const bulanNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  document.getElementById('rosterMonthLabel').innerText = `${bulanNames[data.bulan - 1]} ${data.tahun}`;
+
+  const totalDays = new Date(data.tahun, data.bulan, 0).getDate();
+  const todayDate = new Date();
+  const isCurMonth = (todayDate.getMonth() + 1 === data.bulan) && (todayDate.getFullYear() === data.tahun);
+  const curDayNum = todayDate.getDate();
+
+  // Tampilkan indikator memuat data arsip absen aktual
+  const gridContainer = document.getElementById('rosterDaysGrid');
+  gridContainer.innerHTML = '<div class="col-12 text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-success me-2"></div>Sinkronisasi rekaman aktual absen dari arsip...</div>';
+
+  // Fungsi helper untuk merender kotak kalender setelah data aktual ditarik
+  const renderCardsWithActual = (actualLogs = {}) => {
+    let countHadirLengkap = 0, countMasukSaja = 0, countMangkir = 0, countOff = 0;
+    gridContainer.innerHTML = "";
+
+    for (let d = 1; d <= totalDays; d++) {
+      const shiftPlan = (data.roster['D' + d] || "OFF").toUpperCase();
+      const actual = actualLogs['D' + d];
+      const isPastDay = isCurMonth ? (d < curDayNum) : (data.tahun < todayDate.getFullYear() || (data.tahun === todayDate.getFullYear() && data.bulan < (todayDate.getMonth() + 1)));
+      const isToday = isCurMonth && (d === curDayNum);
+
+      let borderCard = isToday ? "border border-2 border-primary shadow-sm" : "border";
+      let actualHtml = "";
+
+      if (actual && actual.adaAbsen) {
+        if (actual.jamPulang && actual.jamPulang !== "-") {
+          countHadirLengkap++;
+          actualHtml = `
+            <div class="mt-1 pt-1 border-top" style="font-size: 0.68rem;">
+              <span class="text-success fw-bold d-block"><i class="fas fa-check-circle me-1"></i>Hadir Lengkap</span>
+              <span class="text-dark d-block">Masuk: <b>${actual.jamMasuk}</b></span>
+              <span class="text-muted d-block">Pulang: <b>${actual.jamPulang}</b></span>
+            </div>
+          `;
+        } else {
+          countMasukSaja++;
+          actualHtml = `
+            <div class="mt-1 pt-1 border-top" style="font-size: 0.68rem;">
+              <span class="text-warning fw-bold d-block"><i class="fas fa-hourglass-half me-1"></i>Belum Pulang</span>
+              <span class="text-dark d-block">Masuk: <b>${actual.jamMasuk}</b></span>
+              <span class="text-muted d-block">Pulang: <i>Belum</i></span>
+            </div>
+          `;
+        }
+      } else {
+        if (shiftPlan === "OFF") {
+          countOff++;
+          actualHtml = `
+            <div class="mt-1 pt-1 border-top text-muted" style="font-size: 0.68rem;">
+              <span><i class="fas fa-bed me-1"></i>Libur Dinas</span>
+            </div>
+          `;
+        } else if (isPastDay) {
+          countMangkir++;
+          actualHtml = `
+            <div class="mt-1 pt-1 border-top" style="font-size: 0.68rem;">
+              <span class="text-danger fw-bold"><i class="fas fa-times-circle me-1"></i>Tidak Hadir</span>
+            </div>
+          `;
+        } else if (isToday) {
+          actualHtml = `
+            <div class="mt-1 pt-1 border-top text-primary fw-bold" style="font-size: 0.68rem;">
+              <i class="fas fa-fingerprint me-1"></i>Menunggu Absen
+            </div>
+          `;
+        } else {
+          actualHtml = `
+            <div class="mt-1 pt-1 border-top text-muted" style="font-size: 0.68rem;">
+              <i class="fas fa-clock me-1"></i>Akan Datang
+            </div>
+          `;
+        }
+      }
+
+      // Warna badge shift jadwal
+      let badgeShiftClass = "bg-secondary text-white";
+      if (shiftPlan.includes("PAGI") || shiftPlan === "OFFICE") badgeShiftClass = "bg-success text-white";
+      else if (shiftPlan.includes("SIANG")) badgeShiftClass = "bg-warning text-dark";
+      else if (shiftPlan.includes("MALAM") || shiftPlan === "SLS" || shiftPlan === "POINTA") badgeShiftClass = "bg-info text-white";
+
+      const dayCard = document.createElement('div');
+      dayCard.className = "col";
+      dayCard.innerHTML = `
+        <div class="p-2 rounded-3 bg-white ${borderCard}" style="min-height: 95px; text-align: center;">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold text-dark" style="font-size: 0.75rem;">Tgl ${d}</span>
+            ${isToday ? '<span class="badge bg-primary" style="font-size: 0.55rem;">HARI INI</span>' : ''}
+          </div>
+          <span class="badge ${badgeShiftClass} w-100 py-1 font-monospace fw-bold" style="font-size: 0.72rem;">${shiftPlan}</span>
+          ${actualHtml}
+        </div>
+      `;
+      gridContainer.appendChild(dayCard);
+    }
+
+    // =========================================================================
+    // PERHITUNGAN TARGET KEWAJIBAN S/D HARI BERJALAN (CUT-OFF HARI INI)
+    // =========================================================================
+    let targetDinasSdHariIni = 0;
+    let targetOffSdHariIni = 0;
+    let totalDinasSebulan = 0;
+
+    // Batas hari berjalan:
+    // Jika bulan aktif yang dilihat -> cut-off = tanggal hari ini
+    // Jika bulan lalu -> cut-off = akhir bulan (selesai)
+    // Jika bulan masa depan -> cut-off = 0
+    let batasHariBerjalan = totalDays;
+    if (isCurMonth) {
+      batasHariBerjalan = curDayNum;
+    } else if (data.tahun > todayDate.getFullYear() || (data.tahun === todayDate.getFullYear() && data.bulan > (todayDate.getMonth() + 1))) {
+      batasHariBerjalan = 0;
+    }
+
+    for (let d = 1; d <= totalDays; d++) {
+      const sPlan = (data.roster['D' + d] || "OFF").toUpperCase();
+      const isDinas = sPlan !== "OFF";
+      if (isDinas) totalDinasSebulan++;
+
+      if (d <= batasHariBerjalan) {
+        if (isDinas) targetDinasSdHariIni++;
+        else targetOffSdHariIni++;
+      }
+    }
+
+    const countAbsenMasuk = countHadirLengkap + countMasukSaja;
+    const countAbsenPulang = countHadirLengkap;
+    const countTidakAbsen = Math.max(0, targetDinasSdHariIni - countAbsenMasuk);
+    const countTotalOffSebulan = totalDays - totalDinasSebulan;
+
+    // Format subteks hari berjalan
+    const subtextHari = isCurMonth ? `s/d Tgl ${curDayNum}` : (batasHariBerjalan === 0 ? `Bulan Depan` : `Rekap Penuh`);
+
+    // Perbarui 4 Kartu Ringkasan Atas dengan Rasio Kewajiban
+    const statsBox = document.getElementById('rosterSummaryStats');
+    statsBox.innerHTML = `
+      <div class="col-3">
+        <div class="p-2 rounded-3 bg-success bg-opacity-10 border border-success h-100 d-flex flex-column justify-content-between">
+          <div>
+            <small class="text-success fw-bold d-block text-uppercase" style="font-size: 0.62rem; letter-spacing: 0.3px;">ABSEN MASUK</small>
+            <h5 class="fw-bold m-0 text-success">
+              ${countAbsenMasuk} <span class="text-muted fs-6 fw-normal">/ ${targetDinasSdHariIni}</span>
+            </h5>
+          </div>
+          <small class="text-muted fw-semibold mt-1" style="font-size: 0.58rem;">Wajib ${subtextHari}</small>
+        </div>
+      </div>
+
+      <div class="col-3">
+        <div class="p-2 rounded-3 bg-info bg-opacity-10 border border-info h-100 d-flex flex-column justify-content-between">
+          <div>
+            <small class="text-info fw-bold d-block text-uppercase" style="font-size: 0.62rem; letter-spacing: 0.3px;">ABSEN PULANG</small>
+            <h5 class="fw-bold m-0 text-info">
+              ${countAbsenPulang} <span class="text-muted fs-6 fw-normal">/ ${targetDinasSdHariIni}</span>
+            </h5>
+          </div>
+          <small class="text-muted fw-semibold mt-1" style="font-size: 0.58rem;">Wajib ${subtextHari}</small>
+        </div>
+      </div>
+
+      <div class="col-3">
+        <div class="p-2 rounded-3 bg-danger bg-opacity-10 border border-danger h-100 d-flex flex-column justify-content-between">
+          <div>
+            <small class="text-danger fw-bold d-block text-uppercase" style="font-size: 0.62rem; letter-spacing: 0.3px;">TIDAK ABSEN</small>
+            <h5 class="fw-bold m-0 text-danger">${countTidakAbsen}</h5>
+          </div>
+          <small class="text-muted fw-semibold mt-1" style="font-size: 0.58rem;">Dari ${targetDinasSdHariIni} Hari Dinas</small>
+        </div>
+      </div>
+
+      <div class="col-3">
+        <div class="p-2 rounded-3 bg-secondary bg-opacity-10 border border-secondary h-100 d-flex flex-column justify-content-between">
+          <div>
+            <small class="text-secondary fw-bold d-block text-uppercase" style="font-size: 0.62rem; letter-spacing: 0.3px;">TOTAL OFF</small>
+            <h5 class="fw-bold m-0 text-secondary">
+              ${targetOffSdHariIni} <span class="text-muted fs-6 fw-normal">/ ${countTotalOffSebulan}</span>
+            </h5>
+          </div>
+          <small class="text-muted fw-semibold mt-1" style="font-size: 0.58rem;">Terlewat / Sebulan</small>
+        </div>
+      </div>
+    `;
+  };
+
+  // Panggil data aktual dari backend
+  if (typeof google !== 'undefined' && google.script && google.script.run && typeof google.script.run.getActualAbsenPersonil === 'function') {
+    google.script.run
+      .withSuccessHandler(res => {
+        renderCardsWithActual(res.success ? res.actualLogs : {});
+      })
+      .withFailureHandler(() => {
+        renderCardsWithActual({});
+      })
+      .getActualAbsenPersonil(data.nik, data.bulan, data.tahun);
+  } else {
+    // Fallback pencarian di memori lokal masterData.absensiHarian jika offline / mode cache
+    const localLogs = {};
+    const tBulanStr = String(data.bulan).padStart(2, '0');
+    (masterData.absensiHarian || []).forEach(a => {
+      if ((a.NIK || "").toString().trim() === data.nik.toString().trim()) {
+        const tglStr = (a.Tanggal || a.TANGGAL || "").toString();
+        if (tglStr.includes(`-${tBulanStr}-`)) {
+          const dNum = parseInt(tglStr.substring(8, 10), 10);
+          if (!isNaN(dNum)) {
+            localLogs['D' + dNum] = {
+              adaAbsen: true,
+              jamMasuk: (a.WAKTU_INPUT || "").toString().substring(11, 16) || "OK",
+              jamPulang: (a.WAKTU_PULANG || "").toString().substring(11, 16) || "-"
+            };
+          }
+        }
+      }
+    });
+    renderCardsWithActual(localLogs);
+  }
 }
 </script>
 </body>
