@@ -3621,37 +3621,87 @@ function getKTPDigital() {
         }
     }
 
-    function renderLaporanBujpSummary() {
+    // =========================================================================
+    // SIKLUS OPERASIONAL LAPORAN POS 24 JAM (06:00 WIB s/d 06:00 WIB BESOK)
+    // =========================================================================
+    function getOperationalWindow(refDate) {
+      const now = refDate || new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const d = now.getDate();
+      const h = now.getHours();
+
+      let winStart, winEnd;
+      if (h < 6) {
+        // Dini hari (00:00 - 05:59) -> Masih bagian Shift Malam Kemarin
+        winStart = new Date(y, m, d - 1, 6, 0, 0, 0);
+        winEnd = new Date(y, m, d, 6, 0, 0, 0);
+      } else {
+        // Pagi hingga malam (06:00 - 23:59) -> Siklus Hari Ini
+        winStart = new Date(y, m, d, 6, 0, 0, 0);
+        winEnd = new Date(y, m, d + 1, 6, 0, 0, 0);
+      }
+      return { start: winStart, end: winEnd };
+    }
+
+    // Parsing Timestamp Laporan yang Kebal Perbedaan Format String / Objek Date
+    function parseReportTimestamp(rawTime) {
+      if (!rawTime) return null;
+      if (rawTime instanceof Date) return rawTime;
+      const str = String(rawTime).trim().replace('Z', '').replace(' ', 'T');
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) return d;
+      
+      const m = String(rawTime).match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
+      if (m) {
+        return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10), parseInt(m[4], 10), parseInt(m[5], 10), parseInt(m[6] || 0, 10));
+      }
+      return null;
+    }
+
+    // =========================================================================
+// HELPER: JENDELA SIKLUS 24 JAM OPERASIONAL (06:00 s/d 06:00 WIB BESOK)
+// =========================================================================
+function getOperationalWindow(refDate) {
+    var now = refDate || new Date();
+    var y = now.getFullYear(), m = now.getMonth(), d = now.getDate(), h = now.getHours();
+    var winStart, winEnd;
+    if (h < 6) {
+        // Pukul 00:00 - 05:59 WIB: Masih rangkaian shift malam kemarin
+        winStart = new Date(y, m, d - 1, 6, 0, 0, 0);
+        winEnd = new Date(y, m, d, 6, 0, 0, 0);
+    } else {
+        // Pukul 06:00 - 23:59 WIB: Siklus hari ini
+        winStart = new Date(y, m, d, 6, 0, 0, 0);
+        winEnd = new Date(y, m, d + 1, 6, 0, 0, 0);
+    }
+    return { start: winStart, end: winEnd };
+}
+
+function parseReportTimestamp(rawTime) {
+    if (!rawTime) return null;
+    if (rawTime instanceof Date) return isNaN(rawTime.getTime()) ? null : rawTime;
+    var str = String(rawTime).trim().replace('Z', '').replace(' ', 'T');
+    var d = new Date(str);
+    if (!isNaN(d.getTime())) return d;
+    var m = String(rawTime).match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
+    if (m) {
+        return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10), parseInt(m[4], 10), parseInt(m[5], 10), parseInt(m[6] || 0, 10));
+    }
+    return null;
+}
+
+function renderLaporanBujpSummary() {
     var container = document.getElementById('containerBujpLaporan');
     var badgeTotal = document.getElementById('totalLaporanBadge');
     if (!container) return;
 
-    var now = new Date();
-    var curHour = now.getHours();
-    var curMinsTotal = curHour * 60 + now.getMinutes();
-
-    // SINKRONISASI CUT-OFF OPERASIONAL DENGAN SISTEM ABSENSI:
-    // Reset harian baru dilakukan saat jendela Shift Pagi dibuka (pukul 05:00 / 06:00 WIB)
-    // Jika sebelum pukul 06:00 pagi, maka dini hari masih merupakan Shift Malam hari kemarin.
-    var cutoffTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0);
-    if (curMinsTotal < 360) {
-        // Mundur 1 hari ke jam 06:00 kemarin
-        cutoffTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        cutoffTime.setHours(6, 0, 0, 0);
-    }
-
-    // Filter laporan: Hanya yang diinput SETELAH jam buka operasional shift hari ini
+    // Filter Ketat: Jendela 06:00 WIB s/d 06:00 WIB Hari Berikutnya
+    var opWin = getOperationalWindow();
     var laporanHariIni = (masterData.laporanHarian || []).filter(function(l) {
-        var rawTime = l.WAKTU_INPUT || l.TANGGAL || "";
-        if (!rawTime) return false;
-        var reportDate = new Date(rawTime);
-        if (isNaN(reportDate.getTime())) {
-            // Fallback jika berupa format string
-            var tglStr = rawTime.toString().substring(0, 10);
-            var todayFormat = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-            return tglStr === todayFormat && parseInt(rawTime.substring(11, 13) || "0", 10) >= 6;
-        }
-        return reportDate.getTime() >= cutoffTime.getTime();
+        var rDate = parseReportTimestamp(l.WAKTU_INPUT || l.TANGGAL);
+        if (!rDate) return false;
+        return rDate.getTime() >= opWin.start.getTime() && rDate.getTime() < opWin.end.getTime();
     });
 
     if (badgeTotal) {
@@ -3832,33 +3882,14 @@ function getKTPDigital() {
 
     function showDetailLaporanModal(wilayahTarget, kategoriFilter) {
         if (!kategoriFilter) kategoriFilter = 'ALL';
-        var now = new Date();
-        var curHour = now.getHours();
-        var curMinsTotal = curHour * 60 + now.getMinutes();
+        var opWin = getOperationalWindow();
 
-        // Cut-off operasional yang identik (Pukul 06:00 WIB)
-        var cutoffTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0);
-        if (curMinsTotal < 360) {
-            cutoffTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-            cutoffTime.setHours(6, 0, 0, 0);
-        }
-
-        // Filter data laporan sesuai jendela dinas aktif
+        // Filter data laporan sesuai jendela siklus dinas 06:00 s/d 06:00 WIB
         var listLaporan = (masterData.laporanHarian || []).filter(function(l) {
-            var rawTime = l.WAKTU_INPUT || l.TANGGAL || "";
-            if (!rawTime) return false;
-            var reportDate = new Date(rawTime);
-            var matchDate = false;
+            var rDate = parseReportTimestamp(l.WAKTU_INPUT || l.TANGGAL);
+            if (!rDate) return false;
 
-            if (!isNaN(reportDate.getTime())) {
-                matchDate = reportDate.getTime() >= cutoffTime.getTime();
-            } else {
-                var tglStr = rawTime.toString().substring(0, 10);
-                var todayFormat = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-                matchDate = (tglStr === todayFormat && parseInt(rawTime.substring(11, 13) || "0", 10) >= 6);
-            }
-
-            var matchWilayah = (wilayahTarget === 'ALL' || (l.WILAYAH || "").toString().trim().toUpperCase() === wilayahTarget.toUpperCase());
+            var matchDate = rDate.getTime() >= opWin.start.getTime() && rDate.getTime() < opWin.end.getTime();
             var matchWilayah = (wilayahTarget === 'ALL' || (l.WILAYAH || "").toString().trim().toUpperCase() === wilayahTarget.toUpperCase());
             
             var kat = (l.KATEGORI_LAPORAN || "").toString().toUpperCase();
