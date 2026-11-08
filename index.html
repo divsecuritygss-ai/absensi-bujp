@@ -1871,15 +1871,13 @@
                 <div class="streak-card mb-3 flex-grow-1 d-flex flex-column justify-content-between">
                   <div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                      <div class="d-flex align-items-center gap-2">
-                        <span style="font-size: 1.35rem;">📊</span>
-                        <div>
-                          <div class="d-flex align-items-center gap-2">
-                            <h6 class="fw-bold m-0" id="modernStreakTitle">Tingkat Kehadiran Bulanan</h6>
-                            <span class="badge bg-warning text-dark fw-bolder px-2 py-1 shadow-sm" id="modernPersonilRank" style="font-size: 0.65rem;">RANK -</span>
-                          </div>
-                          <small class="text-muted d-block" id="modernStreakDesc" style="font-size: 0.68rem;">Pencapaian Dinas terhadap Target Akhir Bulan</small>
+                      <!-- Judul Bersih Tanpa Logo Chart -->
+                      <div>
+                        <div class="d-flex align-items-center gap-2">
+                          <h6 class="fw-bold m-0" id="modernStreakTitle">Tingkat Kehadiran Bulanan</h6>
+                          <span class="badge bg-warning text-dark fw-bolder px-2 py-1 shadow-sm" id="modernPersonilRank" style="font-size: 0.65rem;">RANK -</span>
                         </div>
+                        <small class="text-muted d-block" id="modernStreakDesc" style="font-size: 0.68rem;">Pencapaian Dinas terhadap Target Akhir Bulan</small>
                       </div>
                       <div class="text-end">
                         <span class="text-success fw-bold small" id="modernStreakXp">0% Tercapai</span>
@@ -1900,10 +1898,10 @@
                       <div id="barPlanRemaining" class="progress-bar bg-info" role="progressbar" style="width: 0%;" title="Sisa Rencana Dinas s/d Akhir Bulan"></div>
                     </div>
 
-                    <!-- Legenda 3 Warna -->
+                    <!-- Legenda 3 Warna (Hadir, Tidak Hadir, Sisa Jadwal) -->
                     <div class="d-flex gap-3 text-muted justify-content-start flex-wrap mb-1" style="font-size: 0.65rem;">
-                      <span><i class="fas fa-circle text-success me-1"></i>Aktual: <b id="legendaAktual" class="text-dark">0</b></span>
-                      <span><i class="fas fa-circle text-warning me-1"></i>Belum Hadir: <b id="legendaGap" class="text-dark">0</b></span>
+                      <span><i class="fas fa-circle text-success me-1"></i>Hadir: <b id="legendaAktual" class="text-dark">0</b></span>
+                      <span><i class="fas fa-circle text-warning me-1"></i>Tidak Hadir: <b id="legendaGap" class="text-dark">0</b></span>
                       <span><i class="fas fa-circle text-info me-1"></i>Sisa Jadwal: <b id="legendaSisa" class="text-dark">0</b></span>
                     </div>
                   </div>
@@ -7408,11 +7406,11 @@ function displayRosterDetails(data) {
       // Set Lebar 3 Segmen Bar
       if (barActual) {
         barActual.style.width = pctActual + "%";
-        barActual.setAttribute('title', `Aktual Hadir: ${totalAbsenMasuk} Hari (${pctActual}%)`);
+        barActual.setAttribute('title', `Hadir: ${totalAbsenMasuk} Hari (${pctActual}%)`);
       }
       if (barPlanGap) {
         barPlanGap.style.width = pctGap + "%";
-        barPlanGap.setAttribute('title', `Belum Hadir Hari Ini: ${gapHariIni} Hari (${pctGap}%)`);
+        barPlanGap.setAttribute('title', `Tidak Hadir: ${gapHariIni} Hari (${pctGap}%)`);
       }
       if (barPlanRemaining) {
         barPlanRemaining.style.width = pctRemaining + "%";
