@@ -1660,11 +1660,6 @@
           <i class="fab fa-whatsapp me-1 text-success fs-6"></i>
           <span>Laporkan Gangguan</span>
         </a>
-        <!-- TOMBOL AKSES PORTAL ROSTER PERSONIL -->
-        <button class="btn btn-warning text-dark fw-bold btn-sm rounded-pill px-3 d-flex align-items-center shadow-sm" onclick="openModalRosterPersonil()">
-          <i class="fas fa-calendar-alt me-1"></i>
-          <span>ROSTER SAYA</span>
-        </button>
         <button id="btnLoginNav" class="btn btn-accent fw-bold rounded-pill px-4" style="background: var(--accent);" data-bs-toggle="modal" data-bs-target="#modalLogin">LOGIN ADMIN</button>
         <div id="userProfile" class="d-none d-flex align-items-center">
           <div class="text-white text-end me-3 d-none d-md-block">
@@ -1841,9 +1836,9 @@
                         <i class="fas fa-calendar-alt"></i>
                       </div>
                       <div>
-                        <span class="fw-bold d-block small">Roster Bulanan</span>
-                        <small class="text-muted" style="font-size: 0.65rem;">Lihat tgl 1 s/d 31</small>
-                      </div>
+                    <span class="fw-bold d-block small">Roster Bulanan</span>
+                    <small class="text-muted fw-semibold" id="labelRosterSubBulan" style="font-size: 0.65rem;">Bulan Berjalan</small>
+                  </div>
                     </div>
                   </div>
                 </div>
@@ -2489,6 +2484,23 @@
           </div>
         </div>
 
+        <!-- BAR TRACKER AKTIVITAS LAPORAN POS HARI INI -->
+        <div class="p-2 px-3 rounded-3 border mb-3 bg-white">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <small class="fw-bold text-dark" style="font-size: 0.72rem;">
+              <i class="fas fa-chart-line text-info me-1"></i> Rekap Laporan Shift Hari Ini:
+            </small>
+            <span class="badge bg-info text-white fw-bold" id="lapUserCounterBadge">0 Laporan</span>
+          </div>
+          <div class="progress" style="height: 6px;">
+            <div id="lapUserProgressBar" class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;"></div>
+          </div>
+          <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.65rem;">
+            <span id="lapLastTimeText">Laporan Terakhir: -</span>
+            <span id="lapNextAllowedText">Status: Siap Melapor</span>
+          </div>
+        </div>
+
         <div class="mb-3">
           <label class="fw-bold small text-muted text-uppercase mb-1" style="font-size: 0.72rem;">Pos Penjagaan / Titik Pantau *</label>
           <input type="text" id="fPosPenjagaan" class="form-control" placeholder="Contoh: Pos Main Gate / Pos 2 East Plant">
@@ -3116,9 +3128,17 @@ function getKTPDigital() {
     function updateHeroBulanTahun() {
         const n = new Date();
         const namaBulan = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+        const namaBulanTitleCase = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        
         const heroEl = document.getElementById('heroBulanTahun');
         if (heroEl) {
             heroEl.innerText = namaBulan[n.getMonth()] + " " + n.getFullYear();
+        }
+
+        // Otomatisasi label subjudul tombol Roster Bulanan sesuai bulan berjalan
+        const labelRosterEl = document.getElementById('labelRosterSubBulan');
+        if (labelRosterEl) {
+            labelRosterEl.innerText = `Bulan ${namaBulanTitleCase[n.getMonth()]}`;
         }
     }
 
@@ -4850,6 +4870,7 @@ function viewDokumentasiInframe(rawUrl, pelapor, pos) {
                 }
             }
 
+            // JANGAN POTONG ALUR DENGAN POPUP, SIMPAN STATUSNYA SAJA KE DATA PERSONIL
             if (!isAllowed) {
                 let statusPesan = "Belum Aktif";
                 if (!Array.isArray(aturanShift)) {
@@ -4865,11 +4886,9 @@ function viewDokumentasiInframe(rawUrl, pelapor, pos) {
                     else if (currentTime >= aturanShift[aturanShift.length - 1].end) statusPesan = "Sudah Lewat";
                 }
                 
-                return Swal.fire({
-                    title: "Akses Terkunci",
-                    html: `Waktu Absen Masuk <b>${shiftJadwal}</b> di <b>${wilayah}</b> ${statusPesan}`,
-                    icon: "error"
-                });
+                // Tandai bahwa jendela absen masuk terkunci (tombol absen yang dinonaktifkan)
+                data.isWindowLocked = true;
+                data.lockReason = `Waktu Absen Masuk ${shiftJadwal} di ${wilayah} ${statusPesan}`;
             }
         } else {
             return Swal.fire("Akses Ditolak", `Konfigurasi jam absen untuk shift ${shiftJadwal} tidak ditemukan!`, "error");
@@ -5062,24 +5081,63 @@ function searchPersonilLaporan(nik) {
             if (btnModernText) btnModernText.innerText = "Absen Pulang Sekarang";
         } 
         else {
-            if (modernShiftName) modernShiftName.innerText = `Dinas ${data.Shift}`;
-            if (modernShiftBadge) {
-                modernShiftBadge.className = "badge bg-success bg-opacity-25 text-success border border-success border-opacity-50";
-                modernShiftBadge.innerText = data.Shift;
-            }
-            if (modernStatusPill) {
-                modernStatusPill.className = "badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-1";
-                modernStatusPill.innerText = "Valid";
-            }
-            if (modernStatusSub) modernStatusSub.innerText = "Siap Absen";
+            // Cek apakah personil melebihi batas waktu absen masuk
+            if (data.isWindowLocked) {
+                if (modernShiftName) modernShiftName.innerText = `Dinas ${data.Shift} (Batas Waktu Lewat)`;
+                if (modernShiftBadge) {
+                    modernShiftBadge.className = "badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50";
+                    modernShiftBadge.innerText = data.Shift;
+                }
+                if (modernStatusPill) {
+                    modernStatusPill.className = "badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 px-2 py-1";
+                    modernStatusPill.innerText = "Terkunci";
+                }
+                if (modernStatusSub) modernStatusSub.innerText = "Lewat Jam";
 
-            if (btnModern) {
-                btnModern.disabled = false;
-                btnModern.className = "btn-tactical-absen";
-                btnModern.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
-                btnModern.style.boxShadow = "0 10px 25px -4px rgba(16, 185, 129, 0.45)";
+                // Kunci hanya tombol absen masuk
+                if (btnModern) {
+                    btnModern.disabled = true;
+                    btnModern.className = "btn-tactical-absen";
+                    btnModern.style.background = "#334155";
+                    btnModern.style.boxShadow = "none";
+                }
+                if (btnModernText) btnModernText.innerText = "Batas Waktu Absen Masuk Telah Berakhir";
+            } else {
+                if (modernShiftName) modernShiftName.innerText = `Dinas ${data.Shift}`;
+                if (modernShiftBadge) {
+                    modernShiftBadge.className = "badge bg-success bg-opacity-25 text-success border border-success border-opacity-50";
+                    modernShiftBadge.innerText = data.Shift;
+                }
+                if (modernStatusPill) {
+                    modernStatusPill.className = "badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-1";
+                    modernStatusPill.innerText = "Valid";
+                }
+                if (modernStatusSub) modernStatusSub.innerText = "Siap Absen";
+
+                if (btnModern) {
+                    btnModern.disabled = false;
+                    btnModern.className = "btn-tactical-absen";
+                    btnModern.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+                    btnModern.style.boxShadow = "0 10px 25px -4px rgba(16, 185, 129, 0.45)";
+                }
+                if (btnModernText) btnModernText.innerText = "Absen Masuk Sekarang";
             }
-            if (btnModernText) btnModernText.innerText = "Absen Masuk Sekarang";
+        }
+
+        // =========================================================================
+        // UPDATE JUMLAH LAPORAN POS DARI SHEET 'LAPORAN_HARIAN' KE TILE LAPORAN
+        // =========================================================================
+        const nowObj = new Date();
+        const tglHariIniStr = nowObj.getFullYear() + '-' + String(nowObj.getMonth() + 1).padStart(2, '0') + '-' + String(nowObj.getDate()).padStart(2, '0');
+        const myReports = (masterData.laporanHarian || []).filter(l => {
+            const lNik = (l.NIK || "").toString().trim();
+            const lTgl = (l.TANGGAL || l.WAKTU_INPUT || "").toString().substring(0, 10);
+            return lNik === (data.NIK || "").toString().trim() && lTgl === tglHariIniStr;
+        });
+
+        const tileLaporSub = document.querySelector('.quick-action-tile[onclick="triggerLaporanSecure()"] small');
+        if (tileLaporSub) {
+            tileLaporSub.innerHTML = `<span class="badge bg-info text-white me-1">${myReports.length} Laporan</span> Terkirim Hari Ini`;
         }
     }
 
@@ -5364,26 +5422,111 @@ function searchPersonilLaporan(nik) {
 // ==========================================
 // FITUR BARU: MODUL LAPORAN HARIAN BUJP
 // ==========================================
+// Buka Formulir Laporan dengan Pengecekan Jeda 1 Jam (60 Menit) & Update Bar Chart
 function openLaporanForm() {
-    if (!curAbsen || !curAbsen.NIK) {
-        return Swal.fire("Akses Ditolak", "Data personil tidak ditemukan.", "error");
+  if (!curAbsen || !curAbsen.NIK) {
+    return Swal.fire("Akses Ditolak", "Data personil tidak ditemukan.", "error");
+  }
+
+  // Double Check: Pastikan bukan personil OFF
+  if (curAbsen.Shift === 'OFF') {
+    return Swal.fire({
+      title: "Akses Ditolak",
+      html: `Personil <b>${curAbsen.Nama}</b> sedang <b>LIBUR (OFF)</b>.<br><br>Laporan Pos hanya untuk personil dinas aktif.`,
+      icon: "error"
+    });
+  }
+
+  const now = new Date();
+  const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  const targetNik = (curAbsen.NIK || "").toString().trim();
+
+  // 1. Hitung seluruh laporan yang sudah dibuat personil ini hari ini
+  const myReportsToday = (masterData.laporanHarian || []).filter(l => {
+    const lNik = (l.NIK || "").toString().trim();
+    const lTgl = (l.TANGGAL || l.WAKTU_INPUT || "").toString().substring(0, 10);
+    return lNik === targetNik && lTgl === todayStr;
+  });
+
+  // Urutkan dari yang terbaru ke terlama
+  myReportsToday.sort((a, b) => new Date(b.WAKTU_INPUT) - new Date(a.WAKTU_INPUT));
+
+  // 2. Pengecekan Jeda Minimal 1 Jam (60 Menit)
+  if (myReportsToday.length > 0) {
+    const lastReport = myReportsToday[0];
+    const lastTime = new Date(lastReport.WAKTU_INPUT);
+
+    if (!isNaN(lastTime.getTime())) {
+      const diffMs = now.getTime() - lastTime.getTime();
+      const diffMins = diffMs / 60000;
+
+      if (diffMins < 60) {
+        const sisaMenit = Math.ceil(60 - diffMins);
+        const nextAllowed = new Date(lastTime.getTime() + 60 * 60 * 1000);
+        const jamBukaStr = String(nextAllowed.getHours()).padStart(2, '0') + ":" + String(nextAllowed.getMinutes()).padStart(2, '0');
+
+        return Swal.fire({
+          title: "Batas Waktu Laporan",
+          html: `
+            <div class="text-start small">
+              <p>Ketentuan laporan pos dilakukan <b>setiap 1 jam sekali</b>.</p>
+              <div class="alert alert-warning py-2 px-3 fw-bold mb-2">
+                <i class="fas fa-hourglass-half me-1"></i> Baru melapor ${Math.floor(diffMins)} menit yang lalu.
+              </div>
+              <p class="mb-0">Silakan kirim laporan berikutnya setelah pukul <b>${jamBukaStr} WIB</b> (menunggu sekitar <b>${sisaMenit} menit</b> lagi).</p>
+            </div>
+          `,
+          icon: "warning",
+          confirmButtonColor: "#064e3b"
+        });
+      }
     }
+  }
 
-    document.getElementById('lapNamaBujp').innerText = curAbsen.Nama + " (" + curAbsen.BUJP + ")";
-    document.getElementById('lapWilayah').innerText = curAbsen.Wilayah;
-    document.getElementById('fPosPenjagaan').value = "";
-    document.getElementById('fKategoriLaporan').value = "SITUASI_ROUTINE";
-    document.getElementById('fUraianKejadian').value = "";
-    
-    // Reset input file foto & preview
-    const fileInput = document.getElementById('fFotoKamera');
-    if (fileInput) fileInput.value = "";
-    const previewBox = document.getElementById('fotoPreviewBox');
-    if (previewBox) previewBox.classList.add('d-none');
-    const imgPreview = document.getElementById('imgPreviewLaporan');
-    if (imgPreview) imgPreview.src = "";
+  // 3. Update Visual Tracker Bar & Counter Laporan di Modal
+  const countLap = myReportsToday.length;
+  const badgeLap = document.getElementById('lapUserCounterBadge');
+  const barLap = document.getElementById('lapUserProgressBar');
+  const lastTimeText = document.getElementById('lapLastTimeText');
+  const nextAllowedText = document.getElementById('lapNextAllowedText');
 
-    new bootstrap.Modal(document.getElementById('modalLaporanHarian')).show();
+  if (badgeLap) badgeLap.innerText = `${countLap} Laporan`;
+  
+  // Asumsi target pos: 8-12 jam dinas = target 8 laporan (1 tiap jam)
+  const targetLaporanShift = 8;
+  const progressPct = Math.min(100, Math.round((countLap / targetLaporanShift) * 100));
+
+  if (barLap) {
+    barLap.style.width = progressPct + "%";
+    barLap.className = countLap >= targetLaporanShift 
+      ? "progress-bar bg-success" 
+      : "progress-bar bg-info progress-bar-striped progress-bar-animated";
+  }
+
+  if (myReportsToday.length > 0 && myReportsToday[0].WAKTU_INPUT) {
+    const jamTerakhir = myReportsToday[0].WAKTU_INPUT.substring(11, 16);
+    if (lastTimeText) lastTimeText.innerText = `Laporan Terakhir: Pukul ${jamTerakhir} WIB`;
+  } else {
+    if (lastTimeText) lastTimeText.innerText = "Laporan Terakhir: Belum Ada";
+  }
+
+  if (nextAllowedText) nextAllowedText.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-check-circle"></i> Siap Melapor</span>';
+
+  // 4. Buka Modal Laporan
+  document.getElementById('lapNamaBujp').innerText = curAbsen.Nama + " (" + curAbsen.BUJP + ")";
+  document.getElementById('lapWilayah').innerText = curAbsen.Wilayah;
+  document.getElementById('fPosPenjagaan').value = "";
+  document.getElementById('fKategoriLaporan').value = "SITUASI_ROUTINE";
+  document.getElementById('fUraianKejadian').value = "";
+
+  const fileInput = document.getElementById('fFotoKamera');
+  if (fileInput) fileInput.value = "";
+  const previewBox = document.getElementById('fotoPreviewBox');
+  if (previewBox) previewBox.classList.add('d-none');
+  const imgPreview = document.getElementById('imgPreviewLaporan');
+  if (imgPreview) imgPreview.src = "";
+
+  new bootstrap.Modal(document.getElementById('modalLaporanHarian')).show();
 }
 
 // PREVIEW FOTO DARI KAMERA HP / GALERI
@@ -6919,19 +7062,30 @@ function displayRosterDetails(data) {
         }
     }
 
-    // 3. Akses Cepat Lapor Insiden dengan Proteksi NIK
+    // 1. Gembok Akses Pintas Tombol Lapor Insiden
     function triggerLaporanSecure() {
-        if (curAbsen && curAbsen.NIK) {
-            openLaporanForm();
-        } else {
-            Swal.fire({
-                title: "Verifikasi Diperlukan",
-                text: "Silakan masukkan NIK Anda pada kolom atas terlebih dahulu untuk membuat laporan pos.",
-                icon: "info",
-                confirmButtonColor: "#064e3b"
-            });
-        }
-    }
+  if (!curAbsen || !curAbsen.NIK) {
+    return Swal.fire({
+      title: "Verifikasi Diperlukan",
+      text: "Silakan pilih nama personil terlebih dahulu pada kolom pencarian.",
+      icon: "info",
+      confirmButtonColor: "#064e3b"
+    });
+  }
+
+  // GEMBOK HANYA UNTUK PERSONIL YANG MEMANG JADWALNYA OFF (LIBUR)
+  if (curAbsen.Shift === 'OFF') {
+    return Swal.fire({
+      title: "Akses Ditolak",
+      html: `Personil <b>${curAbsen.Nama}</b> sedang <b>LIBUR (OFF)</b>.<br><br>Laporan pos dan patroli hanya dapat dibuat oleh personil yang memiliki jadwal dinas aktif.`,
+      icon: "error",
+      confirmButtonColor: "#d33"
+    });
+  }
+
+  // Jika terjadwal dinas, personil tetap dizinkan membuat laporan pos
+  openLaporanForm();
+}
 
     // Mesin Penghitung Ranking Kedisiplinan & Audit Presensi Berjalan
     function updateModernStreakGamification(nik, wilayah) {
