@@ -7264,7 +7264,7 @@ function displayRosterDetails(data) {
     // HELPER SEC-OPS: VERIFIKASI TERTUTUP, JAM & GAMIFIKASI
     // =========================================================
 
-    // 1. Autocomplete pencarian Nama Personil (NIK Disembunyikan Total)
+        // Autocomplete Nama Cerdas: Prioritas Cocok Persis & Kapasitas Dropdown Luas
     function handleAutocompleteSecureNama(input) {
       const val = (input.value || "").toString().trim().toUpperCase();
       const wrapper = input.closest('.autocomplete-wrapper');
@@ -7278,22 +7278,46 @@ function displayRosterDetails(data) {
         return;
       }
 
-      // Ambil daftar unik nama dari sheet JADWAL
-      const seenNiks = new Set();
+      // Ambil daftar personil unik dari sheet JADWAL
+      const seenKeys = new Set();
       const sourcePersonil = [];
       (masterData.jadwal || []).forEach(j => {
         const nikStr = (j.NIK || "").toString().trim();
-        if (nikStr && !seenNiks.has(nikStr)) {
-          seenNiks.add(nikStr);
+        const namaStr = (j.Nama || "-").toString().trim();
+        const wilStr = (j.Wilayah || "-").toString().trim();
+
+        // Gunakan NIK sebagai kunci unik; jika NIK kosong gunakan Nama + Wilayah agar tidak hilang
+        const uniqueKey = nikStr ? nikStr : `${namaStr}_${wilStr}`;
+        if (!seenKeys.has(uniqueKey)) {
+          seenKeys.add(uniqueKey);
           sourcePersonil.push({
             NIK: nikStr,
-            Nama: (j.Nama || "-").toString().trim(),
-            Wilayah: (j.Wilayah || "-").toString().trim()
+            Nama: namaStr,
+            Wilayah: wilStr
           });
         }
       });
 
-      const matches = sourcePersonil.filter(p => p.Nama.toUpperCase().includes(val));
+      // Filter nama yang mengandung kata kunci yang diketik
+      let matches = sourcePersonil.filter(p => p.Nama.toUpperCase().includes(val));
+
+      // SMART SORTING: Prioritaskan nama yang SAMA PERSIS atau BERAWALAN kata kunci ke paling atas
+      matches.sort((a, b) => {
+        const nameA = a.Nama.toUpperCase();
+        const nameB = b.Nama.toUpperCase();
+
+        // Prioritas 1: Nama yang sama persis (misal: "MUHAMMAD")
+        const exactA = nameA === val ? 1 : 0;
+        const exactB = nameB === val ? 1 : 0;
+        if (exactA !== exactB) return exactB - exactA;
+
+        // Prioritas 2: Nama yang diawali kata kunci (misal: "MUHAMMAD ...")
+        const startsA = nameA.startsWith(val) ? 1 : 0;
+        const startsB = nameB.startsWith(val) ? 1 : 0;
+        if (startsA !== startsB) return startsB - startsA;
+
+        return nameA.localeCompare(nameB);
+      });
 
       if (matches.length === 0) {
         list.classList.add('d-none');
@@ -7301,19 +7325,19 @@ function displayRosterDetails(data) {
       }
 
       list.classList.remove('d-none');
-      matches.slice(0, 8).forEach(p => {
+      // Naikkan kapasitas tampil hingga 25 nama agar tidak terpotong
+      matches.slice(0, 25).forEach(p => {
         const itemDiv = document.createElement("DIV");
-        // HANYA MENAMPILKAN NAMA DAN WILAYAH (NIK TIDAK PERNAH DIMUNCULKAN DI LAYAR)
         itemDiv.innerHTML = `<strong>${p.Nama}</strong> <small class="text-muted">• ${p.Wilayah}</small>`;
         itemDiv.onclick = () => {
           input.value = p.Nama;
           list.classList.add('d-none');
-          // NIK disimpan di memori sistem secara tersembunyi untuk validasi absen
           searchPersonilRealtime(p.NIK);
         };
         list.appendChild(itemDiv);
       });
     }
+
 
     // 2. Eksekusi Tombol Presensi Taktis
     function handleModernAbsenClick() {
