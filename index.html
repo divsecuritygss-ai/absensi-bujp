@@ -5763,24 +5763,100 @@ function saveLaporanHarianFinal() {
             .withSuccessHandler(res => {
                 endLoading();
                 if (res.success) {
-                    const metaLaporan = `
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span class="text-muted">Pelapor:</span>
-                            <strong class="text-dark">${curAbsen.Nama}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span class="text-muted">Pos Penjagaan:</span>
-                            <strong class="text-primary">${pos}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between small pt-1 border-top">
-                            <span class="text-muted">Kategori:</span>
-                            <span class="badge bg-info text-white">${kat}</span>
-                        </div>
-                    `;
-                    triggerSuccessFeedback("Laporan Harian Terkirim!", res.message || "Laporan situasi pos telah diteruskan ke komando.", metaLaporan);
+                    // Tutup modal formulir laporan
                     const modalEl = document.getElementById('modalLaporanHarian');
-                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                    if (modalInstance) modalInstance.hide();
+                    if (modalEl) {
+                        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                        if (modalInstance) modalInstance.hide();
+                    }
+
+                    // Reset input setelah berhasil kirim
+                    document.getElementById('fPosPenjagaan').value = "";
+                    document.getElementById('fUraianKejadian').value = "";
+                    if (fileInput) fileInput.value = "";
+                    const previewBox = document.getElementById('fotoPreviewBox');
+                    if (previewBox) previewBox.classList.add('d-none');
+
+                    // 1. Eksekusi Animasi Confetti, Sound Effect & Haptic Vibrate
+                    if (typeof playBirdieCelebration === 'function') {
+                        playBirdieCelebration();
+                    }
+                    if (navigator.vibrate) {
+                        try { navigator.vibrate([50, 100, 50]); } catch (e) {}
+                    }
+
+                    // 2. Hitung Waktu Lapor Sekarang & Jam Lapor Berikutnya (1 Jam ke Depan)
+                    const now = new Date();
+                    const jamLaporStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+                    const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+                    const jamNextStr = String(nextHour.getHours()).padStart(2, '0') + ":" + String(nextHour.getMinutes()).padStart(2, '0');
+
+                    // Label Kategori
+                    let badgeColor = "bg-success";
+                    let katLabel = "SITUASI AMAN & ROUTINE";
+                    if (kat.includes("TEMUAN")) {
+                        badgeColor = "bg-warning text-dark";
+                        katLabel = "TEMUAN PATROLI";
+                    } else if (kat.includes("EMERGENCY") || kat.includes("DARURAT")) {
+                        badgeColor = "bg-danger";
+                        katLabel = "SITUASI DARURAT (EMERGENCY)";
+                    } else if (kat.includes("KHUSUS") || kat.includes("INCIDENT")) {
+                        badgeColor = "bg-danger";
+                        katLabel = "KEJADIAN KHUSUS";
+                    }
+
+                    // 3. Tampilkan Popup Interaktif Elegan
+                    Swal.fire({
+                        title: "🎉 LAPORAN POS TERKIRIM!",
+                        html: `
+                            <div class="text-center mb-1">
+                                <h5 class="fw-bold text-success mb-2">Terima kasih, <b>${curAbsen.Nama}</b>!</h5>
+                                <p class="text-muted small mb-3">Laporan situasi pos penjagaan Anda telah berhasil dicatat dan diteruskan ke komando.</p>
+                                
+                                <div class="p-3 rounded-3 text-start mb-3" style="background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.25);">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-muted">Pos Penjagaan:</span>
+                                        <strong class="text-dark">${pos}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-muted">Kategori:</span>
+                                        <span class="badge ${badgeColor}">${katLabel}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between small pt-1 border-top">
+                                        <span class="text-muted">Waktu Lapor:</span>
+                                        <strong class="text-success">${jamLaporStr} WIB</strong>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-warning py-2 px-3 small text-start border-0 shadow-sm" style="font-size: 0.78rem; border-radius: 10px;">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="fas fa-clock text-warning me-2 fs-6"></i>
+                                        <strong class="text-dark">Instruksi Patroli Berikutnya:</strong>
+                                    </div>
+                                    <div class="text-secondary ps-3">
+                                        • Silakan kirimkan laporan pos berikutnya <b>1 jam mendatang</b> (setelah pukul <b>${jamNextStr} WIB</b>).<br>
+                                        • <span class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i>Pengecualian:</span> Gunakan kategori <u><b>EMERGENCY</b></u> jika terjadi situasi darurat mendesak sebelum 1 jam.
+                                    </div>
+                                </div>
+                            </div>
+                        `,
+                        icon: "success",
+                        iconColor: "#059669",
+                        confirmButtonText: '<i class="fas fa-check-circle me-1"></i> Siap, Mengerti',
+                        confirmButtonColor: "#064e3b",
+                        timer: 7000,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'bujp-swal-popup',
+                            title: 'bujp-swal-title'
+                        }
+                    });
+
+                    // 4. Sinkronkan dashboard real-time tanpa reload
+                    setTimeout(() => {
+                        if (typeof fetchData === "function") fetchData(true);
+                    }, 1200);
+
                 } else {
                     Swal.fire({
                         title: "Pemberitahuan Laporan",
