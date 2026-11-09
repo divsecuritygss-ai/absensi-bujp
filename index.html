@@ -1710,6 +1710,11 @@
       border-color: rgba(255, 255, 255, 0.08) !important;
       color: #f8fafc !important;
     }
+
+    /* Hilangkan Badge Rank Permanen */
+    #modernPersonilRank {
+      display: none !important;
+    }
   </style>
   </head>
 <body>
@@ -1875,7 +1880,6 @@
                       <div>
                         <div class="d-flex align-items-center gap-2">
                           <h6 class="fw-bold m-0" id="modernStreakTitle">Tingkat Kehadiran Bulanan</h6>
-                          <span class="badge bg-warning text-dark fw-bolder px-2 py-1 shadow-sm" id="modernPersonilRank" style="font-size: 0.65rem;">RANK -</span>
                         </div>
                         <small class="text-muted d-block" id="modernStreakDesc" style="font-size: 0.68rem;">Pencapaian Dinas terhadap Target Akhir Bulan</small>
                       </div>
@@ -7358,24 +7362,8 @@ function displayRosterDetails(data) {
       const pctTargetHariIni = Math.round((targetDinasSdHariIni / basis) * 100);
       const pctRemaining = Math.max(0, 100 - pctActual - pctGap);
 
-      // 2. Hitung Peringkat di Unit/Wilayah yang Sama
-      const wilTarget = (wilayah || "").toString().trim().toUpperCase();
-      const seUnit = (masterData.jadwal || []).filter(j => 
-        parseInt(j.Bulan, 10) === mNow && 
-        parseInt(j.Tahun, 10) === yNow && 
-        (j.Wilayah || "").toString().trim().toUpperCase() === wilTarget
-      );
-      const totalPersonilUnit = seUnit.length > 0 ? seUnit.length : (masterData.personil || []).length;
-      
-      const rasioDisiplinBerjalan = targetDinasSdHariIni > 0 ? Math.round((totalAbsenMasuk / targetDinasSdHariIni) * 100) : 100;
-      let myRank = 1;
-      if (rasioDisiplinBerjalan < 100) {
-        myRank = Math.min(totalPersonilUnit, Math.max(2, Math.ceil((100 - rasioDisiplinBerjalan) / 10)));
-      }
-
-      // 3. Render ke Elemen DOM
+      // 2. Render ke Elemen DOM (Tanpa Badge Rank)
       const titleEl = document.getElementById('modernStreakTitle');
-      const rankBadge = document.getElementById('modernPersonilRank');
       const descEl = document.getElementById('modernStreakDesc');
       const xpEl = document.getElementById('modernStreakXp');
       const targetBulanEl = document.getElementById('modernStreakTargetBulan');
@@ -7393,11 +7381,6 @@ function displayRosterDetails(data) {
       const legSisa = document.getElementById('legendaSisa');
 
       if (titleEl) titleEl.innerText = "Tingkat Kehadiran Bulanan";
-      if (rankBadge) {
-        rankBadge.innerText = `RANK #${myRank} dari ${totalPersonilUnit}`;
-        rankBadge.className = myRank <= 3 ? "badge bg-warning text-dark fw-bolder px-2 py-1 shadow-sm" : "badge bg-secondary text-white fw-bold px-2 py-1";
-      }
-
       if (descEl) descEl.innerText = `Realisasi: ${totalAbsenMasuk} Hadir dari ${targetDinasSdHariIni} Hari Dinas (s/d Tgl ${dNow})`;
       if (xpEl) xpEl.innerText = `${pctActual}% Tercapai`;
       if (targetBulanEl) targetBulanEl.innerText = `Target: ${totalDinasSebulan} Hari Dinas (100%)`;
