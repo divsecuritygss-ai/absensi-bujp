@@ -47,7 +47,11 @@
                       mode: 'cors',
                       redirect: 'follow',
                       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                      body: JSON.stringify({ action: prop, payload: args })
+                      body: JSON.stringify({ 
+                        token: "absensi426bujp", 
+                        action: prop, 
+                        payload: args 
+                      })
                     })
                     .then(res => {
                       if (!res.ok) throw new Error('Network response was not ok, status: ' + res.status);
@@ -2332,6 +2336,11 @@
             <button class="btn btn-light admin-nav-pill" id="pillPengganti" onclick="showAdminSub('pengganti', this)">
               <i class="fas fa-exchange-alt me-2"></i>Tukar Shift
             </button>
+
+            <!-- TAB KHUSUS SUPERADMIN: KELOLA AKUN -->
+            <button class="btn btn-light admin-nav-pill d-none" id="pillUsers" onclick="showAdminSub('users', this)">
+              <i class="fas fa-users-cog me-2"></i>Kelola Akun
+            </button>
           </div>
         </div>
 
@@ -2441,6 +2450,42 @@
           </div>
         </div> <!-- Penutup #sub-admin-pengganti -->
 
+        <!-- SUBVIEW 3: KELOLA AKUN PENGGUNA (SUPERADMIN ONLY) -->
+        <div id="sub-admin-users" class="admin-subview d-none">
+          <div class="card p-4 shadow-sm border-0 mb-4" style="border-radius: var(--radius-md);">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <div>
+                <h5 class="fw-bold m-0 text-dark"><i class="fas fa-user-shield me-2 text-primary"></i>Manajemen Akun Petugas &amp; BUJP</h5>
+                <small class="text-muted">Kelola kredensial, role akses, hak wilayah, dan reset password administrator</small>
+              </div>
+              <button type="button" class="btn btn-success fw-bold rounded-pill px-4 shadow-sm btn-sm" onclick="openAddUserModal()">
+                <i class="fas fa-user-plus me-1"></i> TAMBAH AKUN BARU
+              </button>
+            </div>
+
+            <div class="table-container">
+              <table class="table table-hover table-bordered align-middle m-0" style="min-width: 900px;">
+                <thead class="table-dark">
+                  <tr>
+                    <th class="ps-3" style="width: 120px;">NIK</th>
+                    <th style="width: 160px;">USERNAME</th>
+                    <th>NAMA LENGKAP</th>
+                    <th style="width: 130px;">ROLE</th>
+                    <th style="width: 150px;">BUJP MITRA</th>
+                    <th style="width: 140px;">WILAYAH</th>
+                    <th class="text-center" style="width: 180px;">AKSI</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">Memuat data akun pengguna...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div> <!-- Penutup #sub-admin-users -->
+
       </div> <!-- Penutup .container-fluid milik #view-settings -->
     </div> <!-- Penutup #view-settings -->
     <!-- MODAL POPUP LOGIN ADMINISTRATOR -->
@@ -2476,6 +2521,96 @@
             </div>
             <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm">
               <i class="fas fa-sign-in-alt me-1"></i> MASUK SISTEM
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FORM TAMBAH / EDIT AKUN (SUPERADMIN) -->
+  <div class="modal fade" id="modalUserAccount" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold" id="modalUserAccountTitle"><i class="fas fa-user-plus me-2"></i>FORM AKUN PETUGAS</h5>
+          <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="formUserAccount" onsubmit="handleSaveUserSubmit(event)">
+            <input type="hidden" id="userFormMode" value="ADD">
+            
+            <div class="mb-3">
+              <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Username Akun *</label>
+              <input type="text" id="userFormUsername" class="form-control fw-bold" placeholder="Contoh: admin_ita" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Nama Lengkap Petugas *</label>
+              <input type="text" id="userFormNama" class="form-control" placeholder="Nama lengkap petugas pengelola" required>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">NIK Personil</label>
+                <input type="text" id="userFormNik" class="form-control" placeholder="NIK (Opsional)">
+              </div>
+              <div class="col-6">
+                <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Role Akses *</label>
+                <select id="userFormRole" class="form-select fw-bold">
+                  <option value="Admin BUJP">Admin BUJP</option>
+                  <option value="Superadmin">Superadmin</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">BUJP Mitra</label>
+                <input type="text" id="userFormBujp" class="form-control" placeholder="Contoh: NDBB / G4S">
+              </div>
+              <div class="col-6">
+                <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Wilayah Kerja</label>
+                <input type="text" id="userFormWilayah" class="form-control" placeholder="Contoh: PGE, ITA, atau ALL">
+              </div>
+            </div>
+
+            <div class="mb-4" id="boxUserFormPassword">
+              <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;" id="labelUserFormPassword">Password Baru *</label>
+              <input type="password" id="userFormPassword" class="form-control" placeholder="Minimal 4 karakter">
+              <small class="text-muted d-block mt-1" id="hintUserFormPassword" style="font-size: 0.65rem;">Wajib diisi saat membuat akun baru.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm">
+              <i class="fas fa-save me-1"></i> SIMPAN AKUN
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL RESET PASSWORD (SUPERADMIN) -->
+  <div class="modal fade" id="modalResetPassword" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-warning text-dark py-2 px-3">
+          <h6 class="modal-title fw-bold m-0"><i class="fas fa-key me-2"></i>RESET PASSWORD</h6>
+          <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-3">
+          <div class="text-center mb-3">
+            <small class="text-muted d-block">Mereset kata sandi untuk akun:</small>
+            <strong class="text-dark fs-6" id="resetTargetUsername">-</strong>
+          </div>
+          <form onsubmit="handleResetPasswordSubmit(event)">
+            <input type="hidden" id="resetInputUsername">
+            <div class="mb-3">
+              <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.7rem;">Password Baru</label>
+              <input type="password" id="resetInputNewPassword" class="form-control form-control-sm" placeholder="Password baru" required>
+            </div>
+            <button type="submit" class="btn btn-warning w-100 py-2 fw-bold rounded-pill btn-sm shadow-sm">
+              <i class="fas fa-check me-1"></i> SIMPAN PASSWORD
             </button>
           </form>
         </div>
@@ -3210,9 +3345,15 @@ function getKTPDigital() {
 
     function showAdminSub(s, btn) {
         document.querySelectorAll('.admin-subview').forEach(el => el.classList.add('d-none'));
-        document.getElementById('sub-admin-' + s).classList.remove('d-none');
+        const targetSub = document.getElementById('sub-admin-' + s);
+        if (targetSub) targetSub.classList.remove('d-none');
         document.querySelectorAll('.admin-nav-pill').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+
+        // Jika membuka tab Kelola Akun, muat data akun terbaru
+        if (s === 'users') {
+            fetchUsersList();
+        }
     }
 
     function updateClock() {
@@ -3899,13 +4040,35 @@ function renderLaporanBujpSummary() {
             cancelButtonText: 'Batal'
         }).then(function(result) {
             if (result.isConfirmed) {
-                if (result.value === "84L1") {
-                    showDetailLaporanModal(wilayah, kategoriFilter);
-                } else {
-                    Swal.fire("Akses Ditolak", "PIN Keamanan yang Anda masukkan salah!", "error");
-                }
+                // Verifikasi PIN dieksekusi di server tanpa mengekspos kode asli di browser
+                startLoading("MEMVERIFIKASI PIN...");
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        endLoading();
+                        if (res && res.success) {
+                            showDetailLaporanModal(wilayah, kategoriFilter);
+                        } else {
+                            Swal.fire("Akses Ditolak", res.message || "PIN Keamanan salah!", "error");
+                        }
+                    })
+                    .withFailureHandler(function() {
+                        endLoading();
+                        Swal.fire("Gagal", "Gagal memverifikasi PIN ke server.", "error");
+                    })
+                    .verifySecurityPin(result.value, 'LAPORAN');
             }
         });
+    }
+
+    // Helper sanitasi teks untuk mencegah Stored XSS saat render string ke innerHTML
+    function escapeHtmlSafe(str) {
+        if (str === null || str === undefined) return "";
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     function showDetailLaporanModal(wilayahTarget, kategoriFilter) {
@@ -3983,12 +4146,19 @@ function renderLaporanBujpSummary() {
                 var waktuDisplay = item.WAKTU_INPUT || item.TANGGAL || "-";
                 if (waktuDisplay.length > 19) waktuDisplay = waktuDisplay.substring(0, 19).replace('T', ' ');
 
+                var safeNama = escapeHtmlSafe(item.NAMA || "-");
+                var safeNik = escapeHtmlSafe(item.NIK || "-");
+                var safeBujp = escapeHtmlSafe(item.BUJP || "-");
+                var safeWilayah = escapeHtmlSafe(item.WILAYAH || "-");
+                var safePos = escapeHtmlSafe(item.POS_PENJAGAAN || item.posPenjagaan || "-");
+                var safeUraian = escapeHtmlSafe(item.URAIAN_KEJADIAN || item.uraianKejadian || "-");
+
                 htmlCards += '<div class="card border-0 shadow-sm bg-light rounded-3 p-3">' +
                     '<div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-1">' +
                         '<div>' +
                             '<span class="badge ' + badgeClass + ' px-3 py-1 mb-1">' + badgeText + '</span>' +
-                            '<h6 class="fw-bold text-dark m-0"><i class="fas fa-user-shield me-1 text-primary"></i> ' + (item.NAMA || "-") + ' (' + (item.NIK || "-") + ')</h6>' +
-                            '<small class="text-muted fw-bold"><i class="fas fa-building me-1"></i> BUJP: ' + (item.BUJP || "-") + ' | Wilayah: ' + (item.WILAYAH || "-") + '</small>' +
+                            '<h6 class="fw-bold text-dark m-0"><i class="fas fa-user-shield me-1 text-primary"></i> ' + safeNama + ' (' + safeNik + ')</h6>' +
+                            '<small class="text-muted fw-bold"><i class="fas fa-building me-1"></i> BUJP: ' + safeBujp + ' | Wilayah: ' + safeWilayah + '</small>' +
                         '</div>' +
                         '<div class="text-end">' +
                             '<small class="badge bg-secondary text-white fw-bold"><i class="fas fa-clock me-1"></i>' + waktuDisplay + '</small>' +
@@ -3996,11 +4166,11 @@ function renderLaporanBujpSummary() {
                     '</div>' +
                     '<div class="bg-white p-2 rounded-2 border mb-2">' +
                         '<small class="text-muted d-block fw-bold text-uppercase" style="font-size:0.65rem;">Pos Penjagaan / Area</small>' +
-                        '<span class="fw-bold text-primary">' + (item.POS_PENJAGAAN || item.posPenjagaan || "-") + '</span>' +
+                        '<span class="fw-bold text-primary">' + safePos + '</span>' +
                     '</div>' +
                     '<div class="bg-white p-3 rounded-2 border">' +
                         '<small class="text-muted d-block fw-bold text-uppercase mb-1" style="font-size:0.65rem;">Uraian Laporan / Kejadian</small>' +
-                        '<p class="m-0 text-dark fw-500" style="white-space: pre-line; font-size: 0.9rem;">' + (item.URAIAN_KEJADIAN || item.uraianKejadian || "-") + '</p>' +
+                        '<p class="m-0 text-dark fw-500" style="white-space: pre-line; font-size: 0.9rem;">' + safeUraian + '</p>' +
                     '</div>' +
                     fotoBtn +
                     '</div>';
@@ -4889,7 +5059,8 @@ function viewDokumentasiInframe(rawUrl, pelapor, pos) {
             .withSuccessHandler(res => {
                 endLoading();
                 if(res.success) {
-                    currentUser = res.user; 
+                    currentUser = res.user;
+                    currentUser.sessionToken = res.sessionToken || ""; // Menyimpan token sesi aman
 
                     // 1. Tutup modal login secara aman
                     const modalEl = document.getElementById('modalLogin');
@@ -4915,8 +5086,11 @@ function viewDokumentasiInframe(rawUrl, pelapor, pos) {
                     if (labelAdmin) {
                         if(res.user.role === 'Admin BUJP') {
                             labelAdmin.innerText = "WILAYAH KERJA: " + (res.user.wilayah || "-");
+                            if (document.getElementById('pillUsers')) document.getElementById('pillUsers').classList.add('d-none');
                         } else {
                             labelAdmin.innerText = "PENGELOLA PUSAT (SUPERADMIN)";
+                            // TAMPILKAN TAB KELOLA AKUN KHUSUS SUPERADMIN
+                            if (document.getElementById('pillUsers')) document.getElementById('pillUsers').classList.remove('d-none');
                         }
                     }
                     
@@ -5965,7 +6139,7 @@ function saveLaporanHarianFinal() {
                             Swal.fire("Gagal Proses", res.message, "error");
                         }
                     })
-                    .prosesPengganti(nB, nP, alasan, tgl);
+                    .prosesPengganti(nB, nP, alasan, tgl, currentUser ? currentUser.sessionToken : "");
             }
         });
     }
@@ -6035,7 +6209,7 @@ function saveLaporanHarianFinal() {
                     Swal.fire("Gagal", res.message, "error");
                 }
             })
-            .updateJadwalSingle(nik, bulan, tahun, tgl, shift);
+            .updateJadwalSingle(nik, bulan, tahun, tgl, shift, currentUser ? currentUser.sessionToken : "");
     }
 
     function deleteJadwalEntry(nik, bulan, tahun) {
@@ -6059,7 +6233,7 @@ function saveLaporanHarianFinal() {
                             Swal.fire("Gagal", res.message, "error");
                         }
                     })
-                    .deleteJadwalRow(nik, bulan, tahun);
+                    .deleteJadwalRow(nik, bulan, tahun, currentUser ? currentUser.sessionToken : "");
             }
         });
     }
@@ -6633,12 +6807,30 @@ function generateRekapManualLengkap(targetShift, tipeAbsen = 'MASUK') {
         cancelButtonText: 'Batal'
     }).then((result) => {
         if (result.isConfirmed) {
-            if (result.value !== "qaz") {
-                Swal.fire("Akses Ditolak", "Kode PIN salah!", "error");
-                return;
-            }
-            if (!masterData || !masterData.jadwal) return;
-            const now = new Date();
+            // Verifikasi PIN dieksekusi di server Apps Script
+            startLoading("MEMVERIFIKASI KODE...");
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    endLoading();
+                    if (res && res.success) {
+                        prosesEksekusiRekapWA_(targetShift, tipeAbsen);
+                    } else {
+                        Swal.fire("Akses Ditolak", res.message || "Kode PIN salah!", "error");
+                    }
+                })
+                .withFailureHandler(function() {
+                    endLoading();
+                    Swal.fire("Gagal", "Gagal menghubungi server verifikasi.", "error");
+                })
+                .verifySecurityPin(result.value, 'REKAP_WA');
+        }
+    });
+}
+
+// Fungsi pembantu pemroses format pesan teks WhatsApp
+function prosesEksekusiRekapWA_(targetShift, tipeAbsen) {
+    if (!masterData || !masterData.jadwal) return;
+    const now = new Date();
             const curH = now.getHours();
             const shiftName = targetShift.toUpperCase();
             let targetDate = new Date(now.getTime());
@@ -6715,8 +6907,6 @@ function generateRekapManualLengkap(targetShift, tipeAbsen = 'MASUK') {
                 pesan += "*Catatan:* Seluruh personil telah absen " + labelTipe.toLowerCase() + ".";
             }
             window.open("https://wa.me/?text=" + encodeURIComponent(pesan), '_blank');
-        }
-    });
 }
 
 // =========================================================================
@@ -7522,6 +7712,231 @@ function displayRosterDetails(data) {
     }
     setInterval(updateModernClockDisplay, 1000);
     updateModernClockDisplay();
+
+    // =========================================================
+    // JAVASCRIPT: MANAJEMEN AKUN PETUGAS (SUPERADMIN ONLY)
+    // =========================================================
+    let cachedUsersList = [];
+
+    // Helper validasi role fleksibel di sisi peramban
+    function checkIsSuperadmin_() {
+        if (!currentUser || !currentUser.role) return false;
+        const r = currentUser.role.toString().toLowerCase().replace(/[\s_-]/g, '');
+        return r === 'superadmin';
+    }
+
+    function fetchUsersList() {
+        if (!checkIsSuperadmin_()) {
+            console.warn("Pemuatan akun dibatalkan: Akun aktif bukan Superadmin.", currentUser);
+            return;
+        }
+        
+        const tbody = document.getElementById('usersTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Memuat daftar akun pengguna...</td></tr>';
+        }
+
+        const token = (currentUser && currentUser.sessionToken) ? currentUser.sessionToken : "";
+
+        google.script.run
+            .withSuccessHandler(function(res) {
+                if (res && res.success) {
+                    cachedUsersList = res.users || [];
+                    renderUsersTable(cachedUsersList);
+                } else {
+                    if (tbody) {
+                        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle me-1"></i>${(res && res.message) ? res.message : 'Gagal memuat akun.'}</td></tr>`;
+                    }
+                }
+            })
+            .withFailureHandler(function(err) {
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-wifi me-1"></i>Koneksi bermasalah: ${err.toString()}</td></tr>`;
+                }
+            })
+            .getUsersList(token);
+    }
+
+    function renderUsersTable(users) {
+        const tbody = document.getElementById('usersTableBody');
+        if (!tbody) return;
+
+        if (!users || users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-info-circle me-1"></i>Belum ada akun petugas terdaftar di sheet USERS.</td></tr>';
+            return;
+        }
+
+        let html = "";
+        users.forEach(function(u) {
+            const isSuper = (u.role || "").toString().toLowerCase().replace(/[\s_-]/g, '') === 'superadmin';
+            const roleBadge = isSuper ? '<span class="badge bg-danger">Superadmin</span>' : '<span class="badge bg-primary">Admin BUJP</span>';
+            const safeUsername = escapeHtmlSafe(u.username);
+            const safeNama = escapeHtmlSafe(u.nama);
+            const safeNik = escapeHtmlSafe(u.nik || "-");
+            const safeBujp = escapeHtmlSafe(u.bujp || "-");
+            const safeWilayah = escapeHtmlSafe(u.wilayah || "ALL");
+
+            html += `<tr>
+                <td class="ps-3 font-monospace small">${safeNik}</td>
+                <td class="fw-bold text-dark">${safeUsername}</td>
+                <td>${safeNama}</td>
+                <td>${roleBadge}</td>
+                <td><small class="badge bg-light text-dark border">${safeBujp}</small></td>
+                <td><small class="badge bg-light text-secondary border">${safeWilayah}</small></td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill me-1" onclick="openEditUserModal('${safeUsername}')" title="Edit Profil">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill me-1" onclick="openResetPasswordModal('${safeUsername}')" title="Reset Password">
+                        <i class="fas fa-key"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" onclick="handleDeleteUserClick('${safeUsername}')" title="Hapus Akun">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    function openAddUserModal() {
+        document.getElementById('formUserAccount').reset();
+        document.getElementById('userFormMode').value = "ADD";
+        document.getElementById('userFormUsername').disabled = false;
+        document.getElementById('modalUserAccountTitle').innerHTML = '<i class="fas fa-user-plus me-2"></i>BUAT AKUN BARU';
+        document.getElementById('labelUserFormPassword').innerText = "Password Baru *";
+        document.getElementById('userFormPassword').required = true;
+        document.getElementById('hintUserFormPassword').innerText = "Wajib diisi saat membuat akun baru (minimal 4 karakter).";
+
+        new bootstrap.Modal(document.getElementById('modalUserAccount')).show();
+    }
+
+    function openEditUserModal(username) {
+        const target = cachedUsersList.find(u => u.username.toLowerCase() === username.toLowerCase());
+        if (!target) return;
+
+        document.getElementById('formUserAccount').reset();
+        document.getElementById('userFormMode').value = "EDIT";
+        document.getElementById('userFormUsername').value = target.username;
+        document.getElementById('userFormUsername').disabled = true; // Username tidak boleh diubah
+        document.getElementById('userFormNama').value = target.nama;
+        document.getElementById('userFormNik').value = target.nik;
+        document.getElementById('userFormRole').value = target.role;
+        document.getElementById('userFormBujp').value = target.bujp;
+        document.getElementById('userFormWilayah').value = target.wilayah;
+
+        document.getElementById('modalUserAccountTitle').innerHTML = '<i class="fas fa-user-edit me-2"></i>EDIT PROFIL AKUN';
+        document.getElementById('labelUserFormPassword').innerText = "Ganti Password (Opsional)";
+        document.getElementById('userFormPassword').required = false;
+        document.getElementById('hintUserFormPassword').innerText = "Kosongkan jika tidak ingin mengubah password akun ini.";
+
+        new bootstrap.Modal(document.getElementById('modalUserAccount')).show();
+    }
+
+    function handleSaveUserSubmit(e) {
+        e.preventDefault();
+        if (!checkIsSuperadmin_()) return;
+
+        const payload = {
+            username: document.getElementById('userFormUsername').value.trim(),
+            nama: document.getElementById('userFormNama').value.trim(),
+            nik: document.getElementById('userFormNik').value.trim(),
+            role: document.getElementById('userFormRole').value,
+            bujp: document.getElementById('userFormBujp').value.trim(),
+            wilayah: document.getElementById('userFormWilayah').value.trim(),
+            password: document.getElementById('userFormPassword').value
+        };
+
+        startLoading("MENYIMPAN AKUN...");
+        google.script.run
+            .withSuccessHandler(function(res) {
+                endLoading();
+                if (res && res.success) {
+                    Swal.fire("Berhasil", res.message, "success");
+                    const modalEl = document.getElementById('modalUserAccount');
+                    const modalObj = bootstrap.Modal.getInstance(modalEl);
+                    if (modalObj) modalObj.hide();
+                    fetchUsersList();
+                } else {
+                    Swal.fire("Gagal", res.message || "Gagal menyimpan akun.", "error");
+                }
+            })
+            .withFailureHandler(function(err) {
+                endLoading();
+                Swal.fire("Koneksi Gagal", err.toString(), "error");
+            })
+            .saveUserAccount(payload, currentUser.sessionToken);
+    }
+
+    function openResetPasswordModal(username) {
+        document.getElementById('resetTargetUsername').innerText = username;
+        document.getElementById('resetInputUsername').value = username;
+        document.getElementById('resetInputNewPassword').value = "";
+
+        new bootstrap.Modal(document.getElementById('modalResetPassword')).show();
+    }
+
+    function handleResetPasswordSubmit(e) {
+        e.preventDefault();
+        if (!currentUser || currentUser.role !== 'Superadmin') return;
+
+        const targetUser = document.getElementById('resetInputUsername').value;
+        const newPass = document.getElementById('resetInputNewPassword').value.trim();
+
+        startLoading("MERESET PASSWORD...");
+        google.script.run
+            .withSuccessHandler(function(res) {
+                endLoading();
+                if (res && res.success) {
+                    Swal.fire("Password Direset", res.message, "success");
+                    const modalEl = document.getElementById('modalResetPassword');
+                    const modalObj = bootstrap.Modal.getInstance(modalEl);
+                    if (modalObj) modalObj.hide();
+                } else {
+                    Swal.fire("Gagal", res.message || "Gagal mereset password.", "error");
+                }
+            })
+            .withFailureHandler(function(err) {
+                endLoading();
+                Swal.fire("Koneksi Gagal", err.toString(), "error");
+            })
+            .resetUserPassword(targetUser, newPass, currentUser.sessionToken);
+    }
+
+    function handleDeleteUserClick(username) {
+        if (!currentUser || currentUser.role !== 'Superadmin') return;
+
+        Swal.fire({
+            title: 'Hapus Akun Petugas?',
+            html: `Anda yakin ingin menghapus akun <b>${escapeHtmlSafe(username)}</b>?<br><small class="text-danger">Tindakan ini permanen dan tidak dapat dibatalkan.</small>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Hapus Akun',
+            cancelButtonText: 'Batal'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                startLoading("MENGHAPUS AKUN...");
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        endLoading();
+                        if (res && res.success) {
+                            Swal.fire("Terhapus", res.message, "success");
+                            fetchUsersList();
+                        } else {
+                            Swal.fire("Gagal", res.message || "Gagal menghapus akun.", "error");
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        endLoading();
+                        Swal.fire("Koneksi Gagal", err.toString(), "error");
+                    })
+                    .deleteUserAccount(username, currentUser.sessionToken);
+            }
+        });
+    }
 </script>
 </body>
 </html>
