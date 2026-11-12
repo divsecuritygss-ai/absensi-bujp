@@ -5129,129 +5129,129 @@ function viewDokumentasiInframe(rawUrl, pelapor, pos) {
     }
 
     function searchPersonilRealtime(nik) {
-    const pInfo = (masterData.personil || []).find(p => (p.NIK || "").toString() === nik.toString());
-    if (!pInfo) return Swal.fire("Gagal", "NIK tidak ditemukan.", "warning");
+        const pInfo = (masterData.personil || []).find(p => (p.NIK || "").toString() === nik.toString());
+        if (!pInfo) return Swal.fire("Gagal", "NIK tidak ditemukan.", "warning");
 
-    const now = new Date();
-    const jamSekarang = now.getHours();
-    const menitSekarang = now.getMinutes();
-    const currentTime = jamSekarang + (menitSekarang / 60);
+        const now = new Date();
+        const jamSekarang = now.getHours();
+        const menitSekarang = now.getMinutes();
+        const currentTime = jamSekarang + (menitSekarang / 60);
 
-    const formatDate = (d) => {
-        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-    };
-    
-    const tglHariIni = formatDate(now);
-    const kemaren = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const tglKemaren = formatDate(kemaren);
-
-    const logs = (masterData.absensiHarian || []).filter(a => a.NIK && a.NIK.toString() === nik.toString());
-    
-    // --- 🛡️ GEMBOK TANGGAL (ANTI-BOCOR KEMARIN) ---
-    // 1. Cari riwayat absen KHUSUS HARI INI (Apapun statusnya)
-    let logHariIni = logs.find(a => {
-        let tglLogRaw = (a.Tanggal || a.TANGGAL || "");
-        return tglLogRaw && tglLogRaw.toString().substring(0, 10) === tglHariIni;
-    });
-
-    // 2. Cari riwayat absen KEMARIN (Hanya untuk SHIFT MALAM yang BELUM PULANG)
-    let logKemarinBelumPulang = logs.find(a => {
-        let tglLogRaw = (a.Tanggal || a.TANGGAL || "");
-        if (!tglLogRaw) return false;
-        let tglLogString = tglLogRaw.toString().substring(0, 10);
+        const formatDate = (d) => {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        };
         
-        let shiftNya = (a.SHIFT_JADWAL || a.SHIFT || "").toUpperCase();
-        let sudahPulang = a.WAKTU_PULANG && a.WAKTU_PULANG.toString().trim() !== "";
+        const tglHariIni = formatDate(now);
+        const kemaren = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const tglKemaren = formatDate(kemaren);
+
+        const logs = (masterData.absensiHarian || []).filter(a => a.NIK && a.NIK.toString() === nik.toString());
         
-        // --- FIX DARURAT PGE: Masukkan SLS dan POINTA sebagai shift malam ---
-        let isShiftMalamGantung = shiftNya.includes("MALAM") || shiftNya === "SLS" || shiftNya === "POINTA" || shiftNya === "POINT A";
+        // AMBIL JADWAL KALENDER ASLI (HARI INI & KEMARIN)
+        const dToday = now.getDate(), mToday = now.getMonth() + 1, yToday = now.getFullYear();
+        const dYest = kemaren.getDate(), mYest = kemaren.getMonth() + 1, yYest = kemaren.getFullYear();
         
-        // Tarik data kemarin JIKA: dia shift malam/SLS/PointA DAN belum klik pulang
-        return (tglLogString === tglKemaren) && !sudahPulang && isShiftMalamGantung;
-    });
-
-    // Prioritas: Pakai data hari ini. Jika tidak ada, pakai data gantung shift malam kemarin.
-    let activeLog = logHariIni || logKemarinBelumPulang;
-
-    let fixedInTime = null;
-    if (activeLog) {
-        let rawTime = activeLog.WAKTU_INPUT || activeLog.Tanggal || activeLog.TANGGAL || "";
-        fixedInTime = rawTime.toString().replace('Z', ''); 
-    }
-
-    let data = {
-        NIK: nik,
-        Nama: pInfo.Nama,
-        BUJP: pInfo.BUJP,
-        Wilayah: pInfo.Wilayah,
-        Shift: "", 
-        attendanceCount: activeLog ? 1 : 0,
-        firstInTime: fixedInTime, 
-        WAKTU_PULANG: activeLog ? (activeLog.WAKTU_PULANG || "") : ""
-    };
-
-    // Jika data ditemukan (baik masih aktif maupun sudah pulang), langsung tampilkan status
-    if (activeLog) {
-        data.Shift = (activeLog.SHIFT_JADWAL || activeLog.SHIFT || "").toUpperCase();
-        curAbsen = data;
-        showShiftStatus(data, 'NORMAL'); 
-        return; 
-    } 
-
-    // Blok di bawah ini hanya berjalan jika personil belum absen sama sekali (Data Baru)
-    const dIdx = now.getDate();
-    const mIdx = now.getMonth() + 1;
-    const yIdx = now.getFullYear();
-    const jadwalEntry = (masterData.jadwal || []).find(j => j.NIK.toString() === nik.toString() && j.Bulan == mIdx && j.Tahun == yIdx);
-    const shiftJadwal = jadwalEntry ? (jadwalEntry['D' + dIdx] || "OFF").toUpperCase() : "OFF";
-    data.Shift = shiftJadwal;
-
-    if (shiftJadwal !== 'OFF') {
-      const wilayah = (data.Wilayah || "").toUpperCase();
+        const jadwalToday = (masterData.jadwal || []).find(j => j.NIK.toString() === nik.toString() && j.Bulan == mToday && j.Tahun == yToday);
+        const shiftToday = jadwalToday ? (jadwalToday['D' + dToday] || "OFF").toUpperCase() : "OFF";
         
-      // LOGIKA BARU: Langsung gunakan fungsi penjembatan
-      const aturanShift = typeof getActualConfig === 'function' ? getActualConfig(wilayah, shiftJadwal) : undefined;
-  
-      if (aturanShift) {
-            let isAllowed = false;
-            if (Array.isArray(aturanShift)) {
-                isAllowed = aturanShift.some(range => currentTime >= range.start && currentTime < range.end);
-            } else {
-                if (aturanShift.start > aturanShift.end) {
-                    isAllowed = currentTime >= aturanShift.start || currentTime < aturanShift.end;
-                } else {
-                    isAllowed = currentTime >= aturanShift.start && currentTime < aturanShift.end;
-                }
-            }
+        const jadwalYest = (masterData.jadwal || []).find(j => j.NIK.toString() === nik.toString() && j.Bulan == mYest && j.Tahun == yYest);
+        const shiftYest = jadwalYest ? (jadwalYest['D' + dYest] || "OFF").toUpperCase() : "OFF";
 
-            // JANGAN POTONG ALUR DENGAN POPUP, SIMPAN STATUSNYA SAJA KE DATA PERSONIL
-            if (!isAllowed) {
-                let statusPesan = "Belum Aktif";
-                if (!Array.isArray(aturanShift)) {
-                    if (aturanShift.start > aturanShift.end) {
-                        if (currentTime < aturanShift.start && currentTime >= aturanShift.end) statusPesan = "Belum Aktif";
-                        else statusPesan = "Sudah Lewat";
-                    } else {
-                        if (currentTime < aturanShift.start) statusPesan = "Belum Aktif";
-                        else if (currentTime >= aturanShift.end) statusPesan = "Sudah Lewat";
-                    }
-                } else {
-                    if (currentTime < aturanShift[0].start) statusPesan = "Belum Aktif";
-                    else if (currentTime >= aturanShift[aturanShift.length - 1].end) statusPesan = "Sudah Lewat";
-                }
-                
-                // Tandai bahwa jendela absen masuk terkunci (tombol absen yang dinonaktifkan)
-                data.isWindowLocked = true;
-                data.lockReason = `Waktu Absen Masuk ${shiftJadwal} di ${wilayah} ${statusPesan}`;
-            }
+        // 1. Cek Riwayat Absen Hari Ini
+        let logHariIni = logs.find(a => {
+            let t = (a.Tanggal || a.TANGGAL || "");
+            return t && t.toString().substring(0, 10) === tglHariIni;
+        });
+
+        // 2. Cek Riwayat Absen Kemarin (Khusus Shift Malam yang Belum Pulang)
+        let logKemarinBelumPulang = logs.find(a => {
+            let t = (a.Tanggal || a.TANGGAL || "");
+            if (!t) return false;
+            let isKemarin = t.toString().substring(0, 10) === tglKemaren;
+            let isMalam = shiftYest.includes("MALAM") || shiftYest === "SLS_MALAM" || shiftYest === "POINTA_MALAM";
+            let sudahPulang = a.WAKTU_PULANG && a.WAKTU_PULANG.toString().trim() !== "";
+            return isKemarin && isMalam && !sudahPulang;
+        });
+
+        // ==============================================================
+        // PENENTUAN KONTEKS JADWAL AKTIF BERDASARKAN ATURAN WAKTU
+        // ==============================================================
+        let activeLog = null;
+        let activeShiftJadwal = shiftToday;
+        
+        // Pengecualian: Jika sebelum jam 12 Siang DAN ada gantung shift malam kemarin, tahan jadwal kemarin!
+        if (jamSekarang < 12 && logKemarinBelumPulang && !logHariIni) {
+            activeLog = logKemarinBelumPulang;
+            activeShiftJadwal = shiftYest;
         } else {
-            return Swal.fire("Akses Ditolak", `Konfigurasi jam absen untuk shift ${shiftJadwal} tidak ditemukan!`, "error");
+            // Berlaku reset harian normal, gunakan jadwal hari ini!
+            activeLog = logHariIni;
+            activeShiftJadwal = shiftToday;
         }
-    }
 
-    curAbsen = data;
-    showShiftStatus(data, shiftJadwal === 'OFF' ? 'OFF' : 'NORMAL');
-}
+        let fixedInTime = null;
+        if (activeLog) {
+            let rawTime = activeLog.WAKTU_INPUT || activeLog.Tanggal || activeLog.TANGGAL || "";
+            fixedInTime = rawTime.toString().replace('Z', ''); 
+        }
+
+        let data = {
+            NIK: nik,
+            Nama: pInfo.Nama,
+            BUJP: pInfo.BUJP,
+            Wilayah: pInfo.Wilayah,
+            Shift: activeShiftJadwal, 
+            attendanceCount: activeLog ? 1 : 0,
+            firstInTime: fixedInTime, 
+            WAKTU_PULANG: activeLog ? (activeLog.WAKTU_PULANG || "") : "",
+            isWindowLocked: false,
+            lockReason: ""
+        };
+
+        // Jika sudah absen masuk hari ini (atau nyangkut masuk malam), hentikan cek jam buka (Langsung mode "Tugas Aktif/Selesai")
+        if (activeLog) {
+            curAbsen = data;
+            showShiftStatus(data, 'NORMAL'); 
+            return; 
+        } 
+
+        // JIKA BELUM ABSEN MASUK SAMA SEKALI: Kunci Jendela Waktu Sesuai Jadwal
+        if (activeShiftJadwal !== 'OFF') {
+            const wilayah = (data.Wilayah || "").toUpperCase();
+            const aturanShift = typeof getActualConfig === 'function' ? getActualConfig(wilayah, activeShiftJadwal) : undefined;
+    
+            if (aturanShift) {
+                let isAllowed = false;
+                if (Array.isArray(aturanShift)) {
+                    isAllowed = aturanShift.some(range => currentTime >= range.start && currentTime < range.end);
+                } else {
+                    if (aturanShift.start > aturanShift.end) {
+                        isAllowed = currentTime >= aturanShift.start || currentTime < aturanShift.end;
+                    } else {
+                        isAllowed = currentTime >= aturanShift.start && currentTime < aturanShift.end;
+                    }
+                }
+
+                if (!isAllowed) {
+                    let statusPesan = "Belum Aktif";
+                    if (!Array.isArray(aturanShift)) {
+                        if (aturanShift.start > aturanShift.end) {
+                            if (currentTime < aturanShift.start && currentTime >= aturanShift.end) statusPesan = "Belum Aktif";
+                            else statusPesan = "Lewat Jam";
+                        } else {
+                            if (currentTime < aturanShift.start) statusPesan = "Belum Aktif";
+                            else if (currentTime >= aturanShift.end) statusPesan = "Lewat Jam";
+                        }
+                    }
+                    data.isWindowLocked = true;
+                    data.lockReason = statusPesan; // "Belum Aktif" atau "Lewat Jam"
+                }
+            }
+        }
+
+        curAbsen = data;
+        showShiftStatus(data, activeShiftJadwal === 'OFF' ? 'OFF' : 'NORMAL');
+    }
 
 /**
  * PENCARIAN KHUSUS LAPORAN HARIAN (BYPASS JAM ABSEN, DENGAN DUKUNGAN SHIFT LINTAS HARI)
@@ -5285,7 +5285,7 @@ function searchPersonilLaporan(nik) {
         let tglLogString = tglLogRaw.toString().substring(0, 10);
         let shiftNya = (a.SHIFT_JADWAL || a.SHIFT || "").toUpperCase();
         let sudahPulang = a.WAKTU_PULANG && a.WAKTU_PULANG.toString().trim() !== "";
-        let isShiftMalamGantung = shiftNya.includes("MALAM") || shiftNya === "SLS" || shiftNya === "POINTA" || shiftNya === "POINT A" || shiftNya.includes("SLS_MALAM") || shiftNya.includes("POINTA_MALAM");
+        let isShiftMalamGantung = shiftNya.includes("MALAM") || shiftNya === "SLS_MALAM" || shiftNya === "POINTA_MALAM";
         return (tglLogString === yesterdayStr) && !sudahPulang && isShiftMalamGantung;
     });
 
@@ -5316,7 +5316,7 @@ function searchPersonilLaporan(nik) {
                 const jadwalYesterday = (masterData.jadwal || []).find(j => j.NIK.toString() === nik.toString() && j.Bulan == mYesterday && j.Tahun == yYesterday);
                 const shiftYesterday = jadwalYesterday ? (jadwalYesterday['D' + dYesterday] || "OFF").toUpperCase() : "OFF";
 
-                const isShiftMalamLintasHari = shiftYesterday.includes("MALAM") || shiftYesterday === "SLS" || shiftYesterday === "POINTA" || shiftYesterday === "POINT_A" || shiftYesterday.includes("SLS_MALAM") || shiftYesterday.includes("POINTA_MALAM");
+                const isShiftMalamLintasHari = shiftYesterday.includes("MALAM") || shiftYesterday === "SLS_MALAM" || shiftYesterday === "POINTA_MALAM";
 
                 if (isShiftMalamLintasHari) {
                     activeShift = shiftYesterday;
@@ -5435,27 +5435,31 @@ function searchPersonilLaporan(nik) {
             if (btnModernText) btnModernText.innerText = "Absen Pulang Sekarang";
         } 
         else {
-            // Cek apakah personil melebihi batas waktu absen masuk
+            // Cek apakah personil di luar jendela waktu absen masuk (Belum Buka atau Lewat Jam)
             if (data.isWindowLocked) {
-                if (modernShiftName) modernShiftName.innerText = `Dinas ${data.Shift} (Batas Waktu Lewat)`;
+                let isBelumAktif = (data.lockReason === "Belum Aktif");
+                let subText = isBelumAktif ? "Belum Waktunya" : "Lewat Jam";
+                let btnText = isBelumAktif ? "Jadwal Absen Belum Dibuka" : "Batas Waktu Absen Masuk Telah Berakhir";
+
+                if (modernShiftName) modernShiftName.innerText = `Dinas ${data.Shift} (${subText})`;
                 if (modernShiftBadge) {
-                    modernShiftBadge.className = "badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50";
+                    modernShiftBadge.className = "badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50";
                     modernShiftBadge.innerText = data.Shift;
                 }
                 if (modernStatusPill) {
                     modernStatusPill.className = "badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 px-2 py-1";
                     modernStatusPill.innerText = "Terkunci";
                 }
-                if (modernStatusSub) modernStatusSub.innerText = "Lewat Jam";
+                if (modernStatusSub) modernStatusSub.innerText = subText;
 
-                // Kunci hanya tombol absen masuk
+                // Kunci tombol absen masuk dengan warna abu-abu
                 if (btnModern) {
                     btnModern.disabled = true;
                     btnModern.className = "btn-tactical-absen";
                     btnModern.style.background = "#334155";
                     btnModern.style.boxShadow = "none";
                 }
-                if (btnModernText) btnModernText.innerText = "Batas Waktu Absen Masuk Telah Berakhir";
+                if (btnModernText) btnModernText.innerText = btnText;
             } else {
                 if (modernShiftName) modernShiftName.innerText = `Dinas ${data.Shift}`;
                 if (modernShiftBadge) {
