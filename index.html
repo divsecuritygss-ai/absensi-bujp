@@ -5,8 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
   <title>Absensi BUJP</title>
 
-  <!-- PWA MANIFEST & THEME META -->
-  <link rel="manifest" href="manifest.json">
+  <!-- PWA MANIFEST & THEME META (Hanya aktif di domain PWA, bebas error 404 di GAS) -->
+  <script>
+    if (!window.location.hostname.includes('googleusercontent.com') && !window.location.hostname.includes('script.google.com')) {
+      var mLink = document.createElement('link');
+      mLink.rel = 'manifest';
+      mLink.href = 'manifest.json';
+      document.head.appendChild(mLink);
+    }
+  </script>
   <meta name="theme-color" content="#064e3b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1719,6 +1726,104 @@
     #modernPersonilRank {
       display: none !important;
     }
+
+    /* =========================================================
+       MOBILE-FIRST RESPONSIVE POLISH (SMARTPHONE 320px - 768px)
+       ========================================================= */
+    @media (max-width: 768px) {
+      /* 1. Perluas ruang konten utama di HP (kurangi padding 30px -> 14px) */
+      #view-home {
+        padding: 0 14px 28px 14px !important;
+      }
+
+      /* 2. Rapikan Navbar di HP agar satu baris elegan & tidak bertumpuk */
+      .navbar .navbar-brand {
+        font-size: 0.88rem !important;
+      }
+      .navbar .btn-outline-light span {
+        display: none; /* Tampilkan ikon WhatsApp saja di layar sempit */
+      }
+      .navbar .btn-outline-light {
+        padding: 6px 10px !important;
+      }
+      .navbar .btn-outline-light i {
+        margin-right: 0 !important;
+      }
+      #btnLoginNav {
+        padding: 6px 14px !important;
+        font-size: 0.75rem !important;
+      }
+      .btn-theme-toggle {
+        width: 34px;
+        height: 34px;
+      }
+
+      /* 3. Konsol Taktis & Kotak Pencarian Full-Width di HP */
+      .glass-panel-tactical {
+        padding: 1.1rem !important;
+        border-radius: 16px;
+      }
+      .secops-container .autocomplete-wrapper {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+      .secops-container .d-flex.justify-content-between.align-items-center.mb-3 {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+
+      /* 4. Cegah Auto-Zoom iOS Safari saat ketik nama/input (wajib >= 16px) */
+      #inputNik,
+      .form-control,
+      .form-select {
+        font-size: 16px !important;
+      }
+
+      /* 5. Proporsi Jam Digital, Tombol Absen & Kartu Shift di HP */
+      .tactical-clock {
+        font-size: 1.75rem !important;
+      }
+      .btn-tactical-absen {
+        padding: 14px 18px;
+        font-size: 0.95rem;
+      }
+      .shift-unified-card {
+        padding: 1rem;
+      }
+      .summary-card {
+        min-height: 96px;
+        padding: 0.85rem !important;
+      }
+
+      /* 6. Tinggi Peta & Live Ticker Lebih Nyaman di-Scroll pada HP */
+      .map-wrapper {
+        height: 340px;
+        border-radius: 18px;
+      }
+      .ticker-card {
+        height: 360px;
+        border-radius: 18px;
+      }
+      .map-filter-box {
+        top: 10px;
+        right: 10px;
+        min-width: 155px;
+      }
+
+      /* 7. Popup & Modal Lebih Proporsional di Layar HP */
+      .bujp-swal-popup {
+        padding: 1.25rem !important;
+        width: 92vw !important;
+      }
+      #view-settings {
+        padding: 12px !important;
+      }
+      .admin-nav-pill {
+        padding: 8px 12px;
+        font-size: 0.78rem;
+      }
+    }
   </style>
   </head>
 <body>
@@ -2276,46 +2381,6 @@
           </div>
           <div class="modal-footer bg-light py-2 px-3">
             <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Tutup</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL POPUP LOGIN ADMINISTRATOR -->
-    <div class="modal fade" id="modalLogin" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-          <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title fw-bold"><i class="fas fa-user-shield me-2"></i>LOGIN ADMINISTRATOR</h5>
-            <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body p-4">
-            <div class="text-center mb-4">
-              <div class="bg-primary bg-opacity-10 text-primary d-inline-flex rounded-circle p-3 mb-2">
-                <i class="fas fa-lock fa-2x"></i>
-              </div>
-              <h5 class="fw-bolder m-0 text-dark">Autentikasi Petugas</h5>
-              <small class="text-muted">Masukkan kredensial admin unit untuk mengelola jadwal</small>
-            </div>
-            <form onsubmit="handleLogin(event)">
-              <div class="mb-3">
-                <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Username</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
-                  <input type="text" name="username" class="form-control" placeholder="Masukkan username admin" required>
-                </div>
-              </div>
-              <div class="mb-4">
-                <label class="small fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.72rem;">Password</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="fas fa-key text-muted"></i></span>
-                  <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
-                </div>
-              </div>
-              <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm">
-                <i class="fas fa-sign-in-alt me-1"></i> MASUK SISTEM
-              </button>
-            </form>
           </div>
         </div>
       </div>
@@ -3279,24 +3344,26 @@ function getKTPDigital() {
         }
     }
 
-    // Mesin Notifikasi Bukti Kehadiran Modern + Getar (Haptic Feedback) Ponsel
-    function triggerSuccessFeedback(title, subtitle, metaHtml = '') {
+    // Mesin Notifikasi Bukti Kehadiran Modern + Getar (Haptic Feedback) Ponsel (Manual Klik LANJUTKAN)
+    function triggerSuccessFeedback(title, subtitle, metaHtml) {
         if (navigator.vibrate) {
             try { navigator.vibrate([40, 80, 50]); } catch (e) {}
         }
+        var htmlContent = '<div class="text-center mb-1">' +
+            '<div class="text-muted fw-semibold small mb-2">' + (subtitle || '') + '</div>' +
+            (metaHtml ? '<div class="success-receipt-card">' + metaHtml + '</div>' : '') +
+            '</div>';
+
         return Swal.fire({
             title: title,
-            html: `
-                <div class="text-center mb-2">
-                    <p class="text-muted fw-semibold small mb-2">${subtitle}</p>
-                    ${metaHtml ? `<div class="success-receipt-card">${metaHtml}</div>` : ''}
-                </div>
-            `,
+            html: htmlContent,
             icon: 'success',
             iconColor: '#059669',
-            timer: 3000,
-            timerProgressBar: true,
-            showConfirmButton: false,
+            showConfirmButton: true,
+            confirmButtonText: '<i class="fas fa-arrow-right me-1"></i> LANJUTKAN',
+            confirmButtonColor: '#064e3b',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
             customClass: {
                 popup: 'bujp-swal-popup',
                 title: 'bujp-swal-title'
@@ -4022,8 +4089,10 @@ function renderLaporanBujpSummary() {
 }
 
     // ==========================================
-    // MODUL POPUP DETAIL LAPORAN HARIAN (PIN PROTECTED)
+    // MODUL POPUP DETAIL LAPORAN HARIAN (SERVER PIN PROTECTED)
     // ==========================================
+    window._verifiedLaporanPin = "";
+
     function openDetailLaporanWithPin(wilayah, kategoriFilter) {
         Swal.fire({
             title: 'Akses Terkunci',
@@ -4031,7 +4100,7 @@ function renderLaporanBujpSummary() {
             input: 'password',
             inputAttributes: { 
                 autocapitalize: 'off',
-                maxlength: '10',
+                maxlength: '15',
                 placeholder: 'Masukkan PIN...'
             },
             showCancelButton: true,
@@ -4039,23 +4108,25 @@ function renderLaporanBujpSummary() {
             confirmButtonColor: '#064e3b',
             cancelButtonText: 'Batal'
         }).then(function(result) {
-            if (result.isConfirmed) {
-                // Verifikasi PIN dieksekusi di server tanpa mengekspos kode asli di browser
-                startLoading("MEMVERIFIKASI PIN...");
+            if (result.isConfirmed && result.value) {
+                var enteredPin = result.value;
+                startLoading("MEMVERIFIKASI PIN & MEMUAT DETAIL...");
                 google.script.run
                     .withSuccessHandler(function(res) {
                         endLoading();
                         if (res && res.success) {
-                            showDetailLaporanModal(wilayah, kategoriFilter);
+                            window._verifiedLaporanPin = enteredPin;
+                            showDetailLaporanModal(wilayah, kategoriFilter, res.items || []);
                         } else {
-                            Swal.fire("Akses Ditolak", res.message || "PIN Keamanan salah!", "error");
+                            window._verifiedLaporanPin = "";
+                            Swal.fire("Akses Ditolak", (res && res.message) ? res.message : "PIN Keamanan salah!", "error");
                         }
                     })
                     .withFailureHandler(function() {
                         endLoading();
                         Swal.fire("Gagal", "Gagal memverifikasi PIN ke server.", "error");
                     })
-                    .verifySecurityPin(result.value, 'LAPORAN');
+                    .getDetailLaporanPos(wilayah, kategoriFilter || 'ALL', enteredPin);
             }
         });
     }
@@ -4071,26 +4142,9 @@ function renderLaporanBujpSummary() {
             .replace(/'/g, '&#39;');
     }
 
-    function showDetailLaporanModal(wilayahTarget, kategoriFilter) {
+    function showDetailLaporanModal(wilayahTarget, kategoriFilter, serverItems) {
         if (!kategoriFilter) kategoriFilter = 'ALL';
-        var opWin = getOperationalWindow();
-
-        // Filter data laporan sesuai jendela siklus dinas 06:00 s/d 06:00 WIB
-        var listLaporan = (masterData.laporanHarian || []).filter(function(l) {
-            var rDate = parseReportTimestamp(l.WAKTU_INPUT || l.TANGGAL);
-            if (!rDate) return false;
-
-            var matchDate = rDate.getTime() >= opWin.start.getTime() && rDate.getTime() < opWin.end.getTime();
-            var matchWilayah = (wilayahTarget === 'ALL' || (l.WILAYAH || "").toString().trim().toUpperCase() === wilayahTarget.toUpperCase());
-            
-            var kat = (l.KATEGORI_LAPORAN || "").toString().toUpperCase();
-            var matchKategori = true;
-            if (kategoriFilter === 'EMERGENCY') {
-                matchKategori = (kat.indexOf('EMERGENCY') !== -1 || kat.indexOf('DARURAT') !== -1);
-            }
-
-            return matchDate && matchWilayah && matchKategori;
-        });
+        var listLaporan = Array.isArray(serverItems) ? serverItems : [];
 
         var modalTitle = document.getElementById('modalDetailLaporanTitle');
         var modalBody = document.getElementById('modalDetailLaporanBody');
@@ -4100,7 +4154,7 @@ function renderLaporanBujpSummary() {
             if (kategoriFilter === 'EMERGENCY') {
                 modalTitle.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-2"></i>DETAIL LAPORAN SITUASI DARURAT (EMERGENCY)';
             } else {
-                modalTitle.innerHTML = '<i class="fas fa-clipboard-list me-2"></i>DETAIL LAPORAN HARIAN POS - ' + wilayahTarget;
+                modalTitle.innerHTML = '<i class="fas fa-clipboard-list me-2"></i>DETAIL LAPORAN HARIAN POS - ' + escapeHtmlSafe(wilayahTarget);
             }
         }
 
@@ -4131,27 +4185,28 @@ function renderLaporanBujpSummary() {
                     badgeText = "KEJADIAN KHUSUS";
                 }
 
-                var fotoBtn = "";
-                var imgUrl = item.DOKUMENTASI_URL || item.dokumentasiUrl || "";
-                if (imgUrl && imgUrl !== "-" && imgUrl.indexOf("Error") === -1) {
-                    var safePelapor = (item.NAMA || "Petugas").replace(/'/g, "\\'");
-                    var safePos = (item.POS_PENJAGAAN || "Pos").replace(/'/g, "\\'");
-                    fotoBtn = '<div class="mt-2 pt-2 border-top">' +
-                        '<button type="button" class="btn btn-sm btn-outline-primary fw-bold rounded-pill" onclick="viewDokumentasiInframe(\'' + imgUrl + '\', \'' + safePelapor + '\', \'' + safePos + '\')">' +
-                        '<i class="fas fa-image me-1"></i> Lihat Dokumentasi Foto' +
-                        '</button>' +
-                        '</div>';
-                }
-
-                var waktuDisplay = item.WAKTU_INPUT || item.TANGGAL || "-";
-                if (waktuDisplay.length > 19) waktuDisplay = waktuDisplay.substring(0, 19).replace('T', ' ');
-
                 var safeNama = escapeHtmlSafe(item.NAMA || "-");
                 var safeNik = escapeHtmlSafe(item.NIK || "-");
                 var safeBujp = escapeHtmlSafe(item.BUJP || "-");
                 var safeWilayah = escapeHtmlSafe(item.WILAYAH || "-");
                 var safePos = escapeHtmlSafe(item.POS_PENJAGAAN || item.posPenjagaan || "-");
                 var safeUraian = escapeHtmlSafe(item.URAIAN_KEJADIAN || item.uraianKejadian || "-");
+
+                var fotoBtn = "";
+                var imgUrl = (item.DOKUMENTASI_URL || item.dokumentasiUrl || "").toString().trim();
+                if (imgUrl && imgUrl !== "-" && imgUrl.indexOf("Error") === -1 && /^https:\/\//i.test(imgUrl)) {
+                    fotoBtn = '<div class="mt-2 pt-2 border-top">' +
+                        '<button type="button" class="btn btn-sm btn-outline-primary fw-bold rounded-pill" ' +
+                        'data-url="' + escapeHtmlSafe(imgUrl) + '" ' +
+                        'data-pelapor="' + safeNama + '" ' +
+                        'data-pos="' + safePos + '" ' +
+                        'onclick="viewDokumentasiInframe(this.getAttribute(\'data-url\'), this.getAttribute(\'data-pelapor\'), this.getAttribute(\'data-pos\'))">' +
+                        '<i class="fas fa-image me-1"></i> Lihat Dokumentasi Foto' +
+                        '</button>' +
+                        '</div>';
+                }
+
+                var waktuDisplay = escapeHtmlSafe((item.WAKTU_INPUT || item.TANGGAL || "-").toString().substring(0, 19).replace('T', ' '));
 
                 htmlCards += '<div class="card border-0 shadow-sm bg-light rounded-3 p-3">' +
                     '<div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-1">' +
@@ -4187,51 +4242,55 @@ function renderLaporanBujpSummary() {
     }
 
     // ==========================================
-// VIEWER DOKUMENTASI INFRAME (POPUP PREVIEW)
-// ==========================================
-function viewDokumentasiInframe(rawUrl, pelapor, pos) {
-    if (!rawUrl || rawUrl === "-") return;
+    // VIEWER DOKUMENTASI INFRAME (DUKUNGAN FILE DRIVE PRIVAT)
+    // ==========================================
+    function viewDokumentasiInframe(rawUrl, pelapor, pos) {
+        if (!rawUrl || rawUrl === "-" || !/^https:\/\//i.test(rawUrl)) return;
 
-    var directImgUrl = rawUrl;
+        var modalEl = document.getElementById('modalFotoViewer');
+        var titleEl = document.getElementById('fotoViewerTitle');
+        var imgEl = document.getElementById('imgViewerFrame');
+        var loadEl = document.getElementById('fotoViewerLoading');
 
-    // Ekstrak ID file jika link berupa format Google Drive agar dapat tampil di tag <img>
-    var driveMatch = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || rawUrl.match(/id=([a-zA-Z0-9_-]+)/);
-    if (driveMatch && driveMatch[1]) {
-        directImgUrl = "https://lh3.googleusercontent.com/d/" + driveMatch[1];
+        if (titleEl) {
+            titleEl.innerHTML = '<i class="fas fa-image me-2 text-info"></i>DOKUMENTASI: ' + escapeHtmlSafe(pos) + ' (' + escapeHtmlSafe(pelapor) + ')';
+        }
+
+        if (modalEl) {
+            var modalObj = new bootstrap.Modal(modalEl);
+            modalObj.show();
+        }
+
+        if (imgEl && loadEl) {
+            imgEl.classList.add('d-none');
+            loadEl.classList.remove('d-none');
+
+            imgEl.onload = function() {
+                loadEl.classList.add('d-none');
+                imgEl.classList.remove('d-none');
+            };
+
+            // Muat gambar secara aman melalui server GAS (mendukung file Google Drive berstatus Private)
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    if (res && res.success && res.dataUrl) {
+                        imgEl.src = res.dataUrl;
+                    } else {
+                        // Fallback untuk foto lama berstatus publik
+                        var driveMatch = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || rawUrl.match(/id=([a-zA-Z0-9_-]+)/);
+                        imgEl.onerror = function() {
+                            loadEl.classList.add('d-none');
+                            Swal.fire("Info", "Foto tidak dapat dimuat langsung.", "info");
+                        };
+                        imgEl.src = (driveMatch && driveMatch[1]) ? ("https://lh3.googleusercontent.com/d/" + driveMatch[1]) : rawUrl;
+                    }
+                })
+                .withFailureHandler(function() {
+                    loadEl.classList.add('d-none');
+                })
+                .getDriveImageBase64(rawUrl, window._verifiedLaporanPin || "");
+        }
     }
-
-    var modalEl = document.getElementById('modalFotoViewer');
-    var titleEl = document.getElementById('fotoViewerTitle');
-    var imgEl = document.getElementById('imgViewerFrame');
-    var loadEl = document.getElementById('fotoViewerLoading');
-
-    if (titleEl) {
-        titleEl.innerHTML = '<i class="fas fa-image me-2 text-info"></i>DOKUMENTASI: ' + pos + ' (' + pelapor + ')';
-    }
-
-    if (imgEl && loadEl) {
-        imgEl.classList.add('d-none');
-        loadEl.classList.remove('d-none');
-
-        imgEl.onload = function() {
-            loadEl.classList.add('d-none');
-            imgEl.classList.remove('d-none');
-        };
-
-        imgEl.onerror = function() {
-            loadEl.classList.add('d-none');
-            // Fallback jika Google Drive memblokir direct preview: buka melalui tab baru
-            window.open(rawUrl, '_blank');
-        };
-
-        imgEl.src = directImgUrl;
-    }
-
-    if (modalEl) {
-        var modalObj = new bootstrap.Modal(modalEl);
-        modalObj.show();
-    }
-}
 
     function populateBujpChartFilter() {
         const f = document.getElementById('filterBujpChart');
@@ -5719,58 +5778,146 @@ function searchPersonilLaporan(nik) {
     };
     
     google.script.run
-        .withSuccessHandler(res => {
-            endLoading();
-            if(res.success) {
-                const jamFormat = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                const metaReceipt = `
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span class="text-muted">Personil:</span>
-                        <strong class="text-dark">${curAbsen.Nama}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span class="text-muted">Aksi Absen:</span>
-                        <span class="badge ${curAbsen.attendanceCount === 1 ? 'bg-warning text-dark' : 'bg-success'}">${curAbsen.attendanceCount === 1 ? 'ABSEN PULANG' : 'ABSEN MASUK'}</span>
-                    </div>
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span class="text-muted">Shift / Wilayah:</span>
-                        <strong class="text-dark">${curAbsen.Shift} &bull; ${curAbsen.Wilayah}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between small pt-1 border-top">
-                        <span class="text-muted">Waktu Validasi:</span>
-                        <strong class="text-success">${jamFormat} WIB</strong>
-                    </div>
-                `;
-                // ⛳ CELEBRATION BIRDIE GOLF: ANIMASI CONFETTI & SOUND EFFECT INSTAN
-                playBirdieCelebration();
+        .withSuccessHandler(function(res) {
+            if (res && res.success) {
+                var jamFormat = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                var safeNamaPersonil = escapeHtmlSafe(curAbsen.Nama || "Personil");
+                var safeShiftPersonil = escapeHtmlSafe(curAbsen.Shift || "-");
+                var safeWilayahPersonil = escapeHtmlSafe(curAbsen.Wilayah || "-");
+                var isPulangAction = (curAbsen.attendanceCount === 1);
 
-                triggerSuccessFeedback("🎉 BERHASIL! (SELESAI)", res.message || "Data kehadiran telah tersimpan aman di server.", metaReceipt);
+                var tampilkanPopupAbsen = function(actualLogs) {
+                    endLoading();
+                    actualLogs = actualLogs || {};
+                    var nowEval = new Date();
+                    var dNow = nowEval.getDate();
+                    var mNow = nowEval.getMonth() + 1;
+                    var yNow = nowEval.getFullYear();
+                    var targetNikStr = (curAbsen.NIK || "").toString().trim();
+
+                    var jadwalPersonil = (masterData.jadwal || []).find(function(j) {
+                        return (j.NIK || "").toString().trim() === targetNikStr &&
+                               parseInt(j.Bulan, 10) === mNow &&
+                               parseInt(j.Tahun, 10) === yNow;
+                    });
+
+                    var targetDinasSdHariIni = 0;
+                    var totalHadirSdHariIni = 0;
+
+                    if (jadwalPersonil) {
+                        for (var d = 1; d <= dNow; d++) {
+                            var sPlan = (jadwalPersonil['D' + d] || "OFF").toString().trim().toUpperCase();
+                            if (sPlan !== "OFF" && sPlan !== "") {
+                                targetDinasSdHariIni++;
+                                var logHari = actualLogs['D' + d];
+                                if ((logHari && logHari.adaAbsen) || d === dNow) {
+                                    totalHadirSdHariIni++;
+                                }
+                            }
+                        }
+                    }
+
+                    // Menggunakan Math.max tanpa operator minus agar tidak berubah menjadi bullet saat disalin
+                    var selisihAbsen = targetDinasSdHariIni;
+                    selisihAbsen -= totalHadirSdHariIni;
+                    var jumlahTidakAbsen = Math.max(0, selisihAbsen);
+
+                    var pctKehadiran = targetDinasSdHariIni > 0
+                        ? Math.min(100, Math.round((totalHadirSdHariIni / targetDinasSdHariIni) * 100))
+                        : 100;
+
+                    var statusEvalHtml = "";
+                    if (jumlahTidakAbsen === 0) {
+                        statusEvalHtml = '<div class="alert alert-success py-2 px-3 small text-start border-0 shadow-sm mt-2 mb-2" style="border-radius: 10px;">' +
+                            '<i class="fas fa-award text-success me-1"></i> ' +
+                            '<strong>Rekap Kehadiran (s/d Tgl ' + dNow + '): 100% Sesuai Jadwal!</strong><br>' +
+                            '<span class="text-secondary">Seluruh kewajiban dinas Anda (' + totalHadirSdHariIni + ' dari ' + targetDinasSdHariIni + ' hari dinas) tercatat lengkap tanpa bolos/tidak absen.</span>' +
+                            '</div>';
+                    } else {
+                        statusEvalHtml = '<div class="alert alert-warning py-2 px-3 small text-start border-0 shadow-sm mt-2 mb-2" style="border-radius: 10px;">' +
+                            '<i class="fas fa-exclamation-triangle text-warning me-1"></i> ' +
+                            '<strong>Rekap Kehadiran (s/d Tgl ' + dNow + '): ' + pctKehadiran + '% (' + totalHadirSdHariIni + '/' + targetDinasSdHariIni + ' Dinas)</strong><br>' +
+                            '<span class="text-dark">Terdapat <b class="text-danger">' + jumlahTidakAbsen + ' hari dinas</b> yang tercatat <b>tidak absen masuk</b> pada periode bulan ini.</span>' +
+                            '</div>';
+                    }
+
+                    var badgeAksiClass = isPulangAction ? 'bg-warning text-dark' : 'bg-success';
+                    var badgeAksiLabel = isPulangAction ? 'ABSEN PULANG' : 'ABSEN MASUK';
+
+                    var metaReceipt =
+                        '<div class="d-flex justify-content-between small mb-1">' +
+                            '<span class="text-muted">Personil:</span>' +
+                            '<strong class="text-dark">' + safeNamaPersonil + '</strong>' +
+                        '</div>' +
+                        '<div class="d-flex justify-content-between small mb-1">' +
+                            '<span class="text-muted">Aksi Absen:</span>' +
+                            '<span class="badge ' + badgeAksiClass + '">' + badgeAksiLabel + '</span>' +
+                        '</div>' +
+                        '<div class="d-flex justify-content-between small mb-1">' +
+                            '<span class="text-muted">Shift / Wilayah:</span>' +
+                            '<strong class="text-dark">' + safeShiftPersonil + ' &bull; ' + safeWilayahPersonil + '</strong>' +
+                        '</div>' +
+                        '<div class="d-flex justify-content-between small pt-1 border-top">' +
+                            '<span class="text-muted">Waktu Validasi:</span>' +
+                            '<strong class="text-success">' + jamFormat + ' WIB</strong>' +
+                        '</div>' +
+                        statusEvalHtml +
+                        '<div class="p-2 rounded-2 bg-light border text-start small mt-1" style="font-size: 0.78rem;">' +
+                            '<i class="fas fa-shield-alt text-primary me-1"></i> ' +
+                            '<strong>Pesan Komando:</strong> Tetap jaga <b>kedisiplinan dan konsistensi</b> dalam setiap pelaksanaan tugas demi menjaga keamanan dan kelancaran operasional perusahaan.' +
+                        '</div>';
+
+                    if (typeof playBirdieCelebration === 'function') {
+                        playBirdieCelebration();
+                    }
+
+                    triggerSuccessFeedback(
+                        "🎉 ABSENSI BERHASIL!",
+                        'Terima kasih, <b class="text-dark">' + safeNamaPersonil + '</b>! Kehadiran Anda telah tercatat di sistem.',
+                        metaReceipt
+                    );
+                };
+
+                var nowParam = new Date();
+                if (typeof google !== 'undefined' && google.script && google.script.run && typeof google.script.run.getActualAbsenPersonil === 'function') {
+                    google.script.run
+                        .withSuccessHandler(function(rAct) {
+                            tampilkanPopupAbsen((rAct && rAct.success) ? rAct.actualLogs : {});
+                        })
+                        .withFailureHandler(function() {
+                            tampilkanPopupAbsen({});
+                        })
+                        .getActualAbsenPersonil(curAbsen.NIK, nowParam.getMonth() + 1, nowParam.getFullYear(), curAbsen.Nama, currentUser ? currentUser.sessionToken : "");
+                } else {
+                    tampilkanPopupAbsen({});
+                }
                 
-                if(curAbsen.attendanceCount === 1) {
+                if (curAbsen.attendanceCount === 1) {
                     document.getElementById('btnPulang').classList.add('d-none');
-                    if(document.getElementById('btnLaporanHarian')) document.getElementById('btnLaporanHarian').classList.add('d-none');
+                    if (document.getElementById('btnLaporanHarian')) document.getElementById('btnLaporanHarian').classList.add('d-none');
                     document.getElementById('msgSelesai').classList.remove('d-none');
                     document.getElementById('resStatusText').innerHTML = '<span class="text-info fw-bold">TUGAS SELESAI</span>';
                 } else {
                     document.getElementById('btnMasuk').classList.add('d-none');
-                    if(document.getElementById('btnLaporanHarian')) document.getElementById('btnLaporanHarian').classList.remove('d-none');
+                    if (document.getElementById('btnLaporanHarian')) document.getElementById('btnLaporanHarian').classList.remove('d-none');
                     document.getElementById('btnPulang').classList.remove('d-none');
                     document.getElementById('resStatusText').innerHTML = '<span class="text-success fw-bold">TUGAS AKTIF</span>';
                 }
                 
-                const modalEl = document.getElementById('modalAbsenForm');
-                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                var modalEl = document.getElementById('modalAbsenForm');
+                var modalInstance = bootstrap.Modal.getInstance(modalEl);
                 if (modalInstance) modalInstance.hide();
                 document.getElementById('inputNik').value = "";
                 
-                setTimeout(() => { 
+                setTimeout(function() { 
                     if (typeof fetchData === "function") fetchData(true);
                 }, 1500);
             } else {
+                endLoading();
                 Swal.fire("Gagal", res.message, "error");
             }
         })
-        .withFailureHandler(err => {
+        .withFailureHandler(function(err) {
             endLoading();
             Swal.fire("Gagal", "Koneksi bermasalah.", "error");
         })
@@ -5780,8 +5927,10 @@ function searchPersonilLaporan(nik) {
 // ==========================================
 // FITUR BARU: MODUL LAPORAN HARIAN BUJP
 // ==========================================
-// Buka Formulir Laporan dengan Pengecekan Jeda 1 Jam yang Kebal Timezone Bug
-function openLaporanForm() {
+// Buka Formulir Laporan dengan Pengecekan Jeda 1 Jam & Jalur Khusus EMERGENCY
+function openLaporanForm(forceEmergencyMode) {
+  var isEmergencyBypass = (forceEmergencyMode === true);
+
   if (!curAbsen || !curAbsen.NIK) {
     return Swal.fire("Akses Ditolak", "Data personil tidak ditemukan.", "error");
   }
@@ -5790,75 +5939,86 @@ function openLaporanForm() {
   if (curAbsen.Shift === 'OFF') {
     return Swal.fire({
       title: "Akses Ditolak",
-      html: `Personil <b>${curAbsen.Nama}</b> sedang <b>LIBUR (OFF)</b>.<br><br>Laporan Pos hanya untuk personil dinas aktif.`,
+      html: 'Personil <b>' + escapeHtmlSafe(curAbsen.Nama) + '</b> sedang <b>LIBUR (OFF)</b>.<br><br>Laporan Pos hanya untuk personil dinas aktif.',
       icon: "error"
     });
   }
 
-  const now = new Date();
-  const targetNik = (curAbsen.NIK || "").toString().trim();
-  const opWin = typeof getOperationalWindow === 'function' ? getOperationalWindow() : { start: new Date(now.getTime() - 24*3600*1000), end: new Date(now.getTime() + 24*3600*1000) };
+  var now = new Date();
+  var targetNik = (curAbsen.NIK || "").toString().trim();
+  var opWin = typeof getOperationalWindow === 'function' ? getOperationalWindow() : { start: new Date(now.getTime() - 24*3600*1000), end: new Date(now.getTime() + 24*3600*1000) };
 
   // 1. Ambil laporan personil ini yang berada di dalam jendela operasional dinas aktif (06:00 s/d 06:00)
-  const myReportsToday = (masterData.laporanHarian || []).filter(l => {
-    const lNik = (l.NIK || "").toString().trim();
+  var myReportsToday = (masterData.laporanHarian || []).filter(function(l) {
+    var lNik = (l.NIK || "").toString().trim();
     if (lNik !== targetNik) return false;
-    const rDate = parseLocalTimestamp(l.WAKTU_INPUT || l.TANGGAL);
+    var rDate = parseLocalTimestamp(l.WAKTU_INPUT || l.TANGGAL);
     if (!rDate) return false;
     return rDate.getTime() >= opWin.start.getTime() && rDate.getTime() < opWin.end.getTime();
   });
 
   // Urutkan laporan dari yang paling baru ke yang paling lama
-  myReportsToday.sort((a, b) => {
-    const dateA = parseLocalTimestamp(a.WAKTU_INPUT || a.TANGGAL);
-    const dateB = parseLocalTimestamp(b.WAKTU_INPUT || b.TANGGAL);
+  myReportsToday.sort(function(a, b) {
+    var dateA = parseLocalTimestamp(a.WAKTU_INPUT || a.TANGGAL);
+    var dateB = parseLocalTimestamp(b.WAKTU_INPUT || b.TANGGAL);
     return dateB.getTime() - dateA.getTime();
   });
 
-  // 2. Validasi Jeda 1 Jam (60 Menit) Menggunakan Waktu Nyata Lokal
-  if (myReportsToday.length > 0) {
-    const lastReport = myReportsToday[0];
-    const lastTime = parseLocalTimestamp(lastReport.WAKTU_INPUT || lastReport.TANGGAL);
+  // 2. Validasi Jeda 1 Jam (60 Menit) - Munculkan Opsi Tombol LAPORKAN EMERGENCY jika belum 1 jam
+  if (!isEmergencyBypass && myReportsToday.length > 0) {
+    var lastReport = myReportsToday[0];
+    var lastTime = parseLocalTimestamp(lastReport.WAKTU_INPUT || lastReport.TANGGAL);
 
     if (lastTime) {
-      const diffMs = now.getTime() - lastTime.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
+      var diffMs = now.getTime() - lastTime.getTime();
+      var diffMins = Math.floor(diffMs / 60000);
 
-      // Jika laporan terakhir masih di bawah 60 menit dan bukan waktu masa depan
       if (diffMins >= 0 && diffMins < 60) {
-        const sisaMenit = 60 - diffMins;
-        const nextAllowed = new Date(lastTime.getTime() + 60 * 60 * 1000);
-        const jamBukaStr = String(nextAllowed.getHours()).padStart(2, '0') + ":" + String(nextAllowed.getMinutes()).padStart(2, '0');
+        var sisaMenit = 60 - diffMins;
+        var nextAllowed = new Date(lastTime.getTime() + 60 * 60 * 1000);
+        var jamBukaStr = String(nextAllowed.getHours()).padStart(2, '0') + ":" + String(nextAllowed.getMinutes()).padStart(2, '0');
+
+        var htmlLockMsg =
+          '<div class="text-start small">' +
+            '<p class="mb-2">Ketentuan laporan pos reguler dilakukan <b>setiap 1 jam sekali</b>.</p>' +
+            '<div class="alert alert-warning py-2 px-3 fw-bold mb-2">' +
+              '<i class="fas fa-hourglass-half me-1"></i> Baru melapor <b>' + diffMins + ' menit</b> yang lalu.' +
+            '</div>' +
+            '<p class="mb-2">Silakan kirim laporan reguler berikutnya setelah pukul <b>' + jamBukaStr + ' WIB</b> (menunggu sekitar <b>' + sisaMenit + ' menit</b> lagi).</p>' +
+            '<div class="p-2 rounded-2 border border-danger bg-danger bg-opacity-10 text-danger fw-semibold" style="font-size: 0.76rem;">' +
+              '<i class="fas fa-exclamation-triangle me-1"></i> <b>Pengecualian Situasi Darurat:</b> Jika terjadi keadaan darurat mendesak di pos saat ini, tekan tombol <b>LAPORKAN EMERGENCY</b> di bawah.' +
+            '</div>' +
+          '</div>';
 
         return Swal.fire({
           title: "Batas Waktu Laporan",
-          html: `
-            <div class="text-start small">
-              <p>Ketentuan laporan pos dilakukan <b>setiap 1 jam sekali</b>.</p>
-              <div class="alert alert-warning py-2 px-3 fw-bold mb-2">
-                <i class="fas fa-hourglass-half me-1"></i> Baru melapor <b>${diffMins} menit</b> yang lalu.
-              </div>
-              <p class="mb-0">Silakan kirim laporan berikutnya setelah pukul <b>${jamBukaStr} WIB</b> (menunggu sekitar <b>${sisaMenit} menit</b> lagi).</p>
-            </div>
-          `,
+          html: htmlLockMsg,
           icon: "warning",
-          confirmButtonColor: "#064e3b"
+          showDenyButton: true,
+          confirmButtonText: "OK, Mengerti",
+          confirmButtonColor: "#064e3b",
+          denyButtonText: '<i class="fas fa-bolt me-1"></i> LAPORKAN EMERGENCY',
+          denyButtonColor: "#dc2626"
+        }).then(function(result) {
+          if (result.isDenied) {
+            openLaporanForm(true);
+          }
         });
       }
     }
   }
 
   // 3. Update Visual Tracker Bar & Counter Laporan di Modal
-  const countLap = myReportsToday.length;
-  const badgeLap = document.getElementById('lapUserCounterBadge');
-  const barLap = document.getElementById('lapUserProgressBar');
-  const lastTimeText = document.getElementById('lapLastTimeText');
-  const nextAllowedText = document.getElementById('lapNextAllowedText');
+  var countLap = myReportsToday.length;
+  var badgeLap = document.getElementById('lapUserCounterBadge');
+  var barLap = document.getElementById('lapUserProgressBar');
+  var lastTimeText = document.getElementById('lapLastTimeText');
+  var nextAllowedText = document.getElementById('lapNextAllowedText');
 
-  if (badgeLap) badgeLap.innerText = `${countLap} Laporan`;
+  if (badgeLap) badgeLap.innerText = countLap + " Laporan";
   
-  const targetLaporanShift = 8;
-  const progressPct = Math.min(100, Math.round((countLap / targetLaporanShift) * 100));
+  var targetLaporanShift = 8;
+  var progressPct = Math.min(100, Math.round((countLap / targetLaporanShift) * 100));
 
   if (barLap) {
     barLap.style.width = progressPct + "%";
@@ -5868,29 +6028,43 @@ function openLaporanForm() {
   }
 
   if (myReportsToday.length > 0) {
-    const rDate = parseLocalTimestamp(myReportsToday[0].WAKTU_INPUT || myReportsToday[0].TANGGAL);
+    var rDate = parseLocalTimestamp(myReportsToday[0].WAKTU_INPUT || myReportsToday[0].TANGGAL);
     if (rDate) {
-      const jamStr = String(rDate.getHours()).padStart(2, '0') + ":" + String(rDate.getMinutes()).padStart(2, '0');
-      if (lastTimeText) lastTimeText.innerText = `Laporan Terakhir: Pukul ${jamStr} WIB`;
+      var jamStr = String(rDate.getHours()).padStart(2, '0') + ":" + String(rDate.getMinutes()).padStart(2, '0');
+      if (lastTimeText) lastTimeText.innerText = "Laporan Terakhir: Pukul " + jamStr + " WIB";
     }
   } else {
     if (lastTimeText) lastTimeText.innerText = "Laporan Terakhir: Belum Ada";
   }
 
-  if (nextAllowedText) nextAllowedText.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-check-circle"></i> Siap Melapor</span>';
+  if (nextAllowedText) {
+    if (isEmergencyBypass) {
+      nextAllowedText.innerHTML = '<span class="text-danger fw-bold"><i class="fas fa-bolt"></i> Mode Darurat (Emergency)</span>';
+    } else {
+      nextAllowedText.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-check-circle"></i> Siap Melapor</span>';
+    }
+  }
 
-  // 4. Buka Modal Laporan
+  // 4. Buka Modal Laporan & Kunci Kategori jika Masuk dari Jalur Bypass Emergency
   document.getElementById('lapNamaBujp').innerText = curAbsen.Nama + " (" + curAbsen.BUJP + ")";
   document.getElementById('lapWilayah').innerText = curAbsen.Wilayah;
   document.getElementById('fPosPenjagaan').value = "";
-  document.getElementById('fKategoriLaporan').value = "SITUASI_ROUTINE";
+
+  var selKat = document.getElementById('fKategoriLaporan');
+  if (selKat) {
+    Array.from(selKat.options).forEach(function(opt) {
+      opt.disabled = isEmergencyBypass && (opt.value !== "EMERGENCY");
+    });
+    selKat.value = isEmergencyBypass ? "EMERGENCY" : "SITUASI_ROUTINE";
+  }
+
   document.getElementById('fUraianKejadian').value = "";
 
-  const fileInput = document.getElementById('fFotoKamera');
+  var fileInput = document.getElementById('fFotoKamera');
   if (fileInput) fileInput.value = "";
-  const previewBox = document.getElementById('fotoPreviewBox');
+  var previewBox = document.getElementById('fotoPreviewBox');
   if (previewBox) previewBox.classList.add('d-none');
-  const imgPreview = document.getElementById('imgPreviewLaporan');
+  var imgPreview = document.getElementById('imgPreviewLaporan');
   if (imgPreview) imgPreview.src = "";
 
   new bootstrap.Modal(document.getElementById('modalLaporanHarian')).show();
@@ -5983,47 +6157,65 @@ function saveLaporanHarianFinal() {
                         katLabel = "KEJADIAN KHUSUS";
                     }
 
-                    // 3. Tampilkan Popup Interaktif Elegan
+                    // Hitung total laporan personil pada siklus hari bertugas (termasuk laporan yang baru terkirim)
+                    const opWinLap = typeof getOperationalWindow === 'function' ? getOperationalWindow(now) : null;
+                    const targetNikLap = (curAbsen.NIK || "").toString().trim();
+                    const prevCountToday = (masterData.laporanHarian || []).filter(l => {
+                        if ((l.NIK || "").toString().trim() !== targetNikLap) return false;
+                        if (!opWinLap) return true;
+                        const rDate = parseLocalTimestamp(l.WAKTU_INPUT || l.TANGGAL);
+                        return rDate && rDate.getTime() >= opWinLap.start.getTime() && rDate.getTime() < opWinLap.end.getTime();
+                    }).length;
+                    const totalLaporanHariIni = prevCountToday + 1;
+
+                    const safeNamaPelapor = escapeHtmlSafe(curAbsen.Nama || "Personil");
+                    const safePosLabel = escapeHtmlSafe(pos);
+
+                    var htmlPopupLaporan =
+                        '<div class="text-center mb-1">' +
+                            '<h5 class="fw-bold text-success mb-2">Terima kasih, <b>' + safeNamaPelapor + '</b>!</h5>' +
+                            '<p class="text-muted small mb-2">Laporan situasi pos penjagaan Anda telah berhasil dicatat dan diteruskan ke komando.</p>' +
+                            '<div class="alert alert-info py-2 px-3 small fw-bold mb-3 border-0 shadow-sm" style="border-radius: 10px;">' +
+                                '<i class="fas fa-clipboard-check me-1"></i> ' +
+                                'Hari ini Anda telah mengirim <span class="badge bg-primary fs-6 mx-1">' + totalLaporanHariIni + 'x</span> Laporan Pos.' +
+                            '</div>' +
+                            '<div class="p-3 rounded-3 text-start mb-3" style="background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.25);">' +
+                                '<div class="d-flex justify-content-between small mb-1">' +
+                                    '<span class="text-muted">Pos Penjagaan:</span>' +
+                                    '<strong class="text-dark">' + safePosLabel + '</strong>' +
+                                '</div>' +
+                                '<div class="d-flex justify-content-between small mb-1">' +
+                                    '<span class="text-muted">Kategori:</span>' +
+                                    '<span class="badge ' + badgeColor + '">' + katLabel + '</span>' +
+                                '</div>' +
+                                '<div class="d-flex justify-content-between small pt-1 border-top">' +
+                                    '<span class="text-muted">Waktu Lapor:</span>' +
+                                    '<strong class="text-success">' + jamLaporStr + ' WIB</strong>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="alert alert-warning py-2 px-3 small text-start border-0 shadow-sm" style="font-size: 0.78rem; border-radius: 10px;">' +
+                                '<div class="d-flex align-items-center mb-1">' +
+                                    '<i class="fas fa-clock text-warning me-2 fs-6"></i>' +
+                                    '<strong class="text-dark">Ketentuan Laporan &amp; Situasi Darurat:</strong>' +
+                                '</div>' +
+                                '<div class="text-secondary ps-3">' +
+                                    '• Harap kirimkan laporan pos secara rutin <b>setiap 1 jam sekali</b> (laporan berikutnya setelah pukul <b>' + jamNextStr + ' WIB</b>).<br>' +
+                                    '• <span class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i>Situasi Darurat:</span> Apabila terjadi keadaan darurat sebelum batas waktu 1 jam, silakan pilih kategori <u><b>EMERGENCY</b></u> agar laporan dapat langsung dikirim segera.' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+
+                    // 3. Tampilkan Popup Interaktif Elegan (Manual Klik Tombol LANJUTKAN)
                     Swal.fire({
                         title: "🎉 LAPORAN POS TERKIRIM!",
-                        html: `
-                            <div class="text-center mb-1">
-                                <h5 class="fw-bold text-success mb-2">Terima kasih, <b>${curAbsen.Nama}</b>!</h5>
-                                <p class="text-muted small mb-3">Laporan situasi pos penjagaan Anda telah berhasil dicatat dan diteruskan ke komando.</p>
-                                
-                                <div class="p-3 rounded-3 text-start mb-3" style="background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.25);">
-                                    <div class="d-flex justify-content-between small mb-1">
-                                        <span class="text-muted">Pos Penjagaan:</span>
-                                        <strong class="text-dark">${pos}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between small mb-1">
-                                        <span class="text-muted">Kategori:</span>
-                                        <span class="badge ${badgeColor}">${katLabel}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between small pt-1 border-top">
-                                        <span class="text-muted">Waktu Lapor:</span>
-                                        <strong class="text-success">${jamLaporStr} WIB</strong>
-                                    </div>
-                                </div>
-
-                                <div class="alert alert-warning py-2 px-3 small text-start border-0 shadow-sm" style="font-size: 0.78rem; border-radius: 10px;">
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="fas fa-clock text-warning me-2 fs-6"></i>
-                                        <strong class="text-dark">Instruksi Patroli Berikutnya:</strong>
-                                    </div>
-                                    <div class="text-secondary ps-3">
-                                        • Silakan kirimkan laporan pos berikutnya <b>1 jam mendatang</b> (setelah pukul <b>${jamNextStr} WIB</b>).<br>
-                                        • <span class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i>Pengecualian:</span> Gunakan kategori <u><b>EMERGENCY</b></u> jika terjadi situasi darurat mendesak sebelum 1 jam.
-                                    </div>
-                                </div>
-                            </div>
-                        `,
+                        html: htmlPopupLaporan,
                         icon: "success",
                         iconColor: "#059669",
-                        confirmButtonText: '<i class="fas fa-check-circle me-1"></i> Siap, Mengerti',
+                        showConfirmButton: true,
+                        confirmButtonText: '<i class="fas fa-arrow-right me-1"></i> LANJUTKAN',
                         confirmButtonColor: "#064e3b",
-                        timer: 7000,
-                        timerProgressBar: true,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
                         customClass: {
                             popup: 'bujp-swal-popup',
                             title: 'bujp-swal-title'
@@ -7370,10 +7562,10 @@ function displayRosterDetails(data) {
     // Format subteks hari berjalan
     const subtextHari = isCurMonth ? `s/d Tgl ${curDayNum}` : (batasHariBerjalan === 0 ? `Bulan Depan` : `Rekap Penuh`);
 
-    // Perbarui 4 Kartu Ringkasan Atas dengan Rasio Kewajiban
+    // Perbarui 4 Kartu Ringkasan Atas dengan Rasio Kewajiban (Responsif 2x2 di HP, 4 Kolom di Desktop)
     const statsBox = document.getElementById('rosterSummaryStats');
     statsBox.innerHTML = `
-      <div class="col-3">
+      <div class="col-6 col-md-3">
         <div class="p-2 rounded-3 bg-success bg-opacity-10 border border-success h-100 d-flex flex-column justify-content-between">
           <div>
             <small class="text-success fw-bold d-block text-uppercase" style="font-size: 0.62rem; letter-spacing: 0.3px;">ABSEN MASUK</small>
@@ -7385,7 +7577,7 @@ function displayRosterDetails(data) {
         </div>
       </div>
 
-      <div class="col-3">
+      <div class="col-6 col-md-3">
         <div class="p-2 rounded-3 bg-info bg-opacity-10 border border-info h-100 d-flex flex-column justify-content-between">
           <div>
             <small class="text-info fw-bold d-block text-uppercase" style="font-size: 0.62rem; letter-spacing: 0.3px;">ABSEN PULANG</small>
@@ -7397,7 +7589,7 @@ function displayRosterDetails(data) {
         </div>
       </div>
 
-      <div class="col-3">
+      <div class="col-6 col-md-3">
         <div class="p-2 rounded-3 bg-danger bg-opacity-10 border border-danger h-100 d-flex flex-column justify-content-between">
           <div>
             <small class="text-danger fw-bold d-block text-uppercase" style="font-size: 0.62rem; letter-spacing: 0.3px;">TIDAK ABSEN</small>
@@ -7407,7 +7599,7 @@ function displayRosterDetails(data) {
         </div>
       </div>
 
-      <div class="col-3">
+      <div class="col-6 col-md-3">
         <div class="p-2 rounded-3 bg-secondary bg-opacity-10 border border-secondary h-100 d-flex flex-column justify-content-between">
           <div>
             <small class="text-secondary fw-bold d-block text-uppercase" style="font-size: 0.62rem; letter-spacing: 0.3px;">TOTAL OFF</small>
@@ -7421,7 +7613,7 @@ function displayRosterDetails(data) {
     `;
   };
 
-  // Panggil data aktual dari backend
+  // Panggil data aktual dari backend (menyertakan nama untuk verifikasi identitas)
   if (typeof google !== 'undefined' && google.script && google.script.run && typeof google.script.run.getActualAbsenPersonil === 'function') {
     google.script.run
       .withSuccessHandler(res => {
@@ -7430,7 +7622,7 @@ function displayRosterDetails(data) {
       .withFailureHandler(() => {
         renderCardsWithActual({});
       })
-      .getActualAbsenPersonil(data.nik, data.bulan, data.tahun);
+      .getActualAbsenPersonil(data.nik, data.bulan, data.tahun, data.nama, currentUser ? currentUser.sessionToken : "");
   } else {
     // Fallback pencarian di memori lokal masterData.absensiHarian jika offline / mode cache
     const localLogs = {};
@@ -7579,6 +7771,7 @@ function displayRosterDetails(data) {
       const targetNik = (nik || "").toString().trim();
 
       // Panggil backend getActualAbsenPersonil agar data sinkron dengan Arsip_Absensi
+      const targetNamaVerif = (curAbsen && curAbsen.Nama) ? curAbsen.Nama : "";
       if (typeof google !== 'undefined' && google.script && google.script.run && typeof google.script.run.getActualAbsenPersonil === 'function') {
         google.script.run
           .withSuccessHandler(res => {
@@ -7587,7 +7780,7 @@ function displayRosterDetails(data) {
           .withFailureHandler(() => {
             renderStreakWithActualData(targetNik, wilayah, {});
           })
-          .getActualAbsenPersonil(targetNik, mNow, yNow);
+          .getActualAbsenPersonil(targetNik, mNow, yNow, targetNamaVerif, currentUser ? currentUser.sessionToken : "");
       } else {
         renderStreakWithActualData(targetNik, wilayah, {});
       }
@@ -7788,13 +7981,13 @@ function displayRosterDetails(data) {
                 <td><small class="badge bg-light text-dark border">${safeBujp}</small></td>
                 <td><small class="badge bg-light text-secondary border">${safeWilayah}</small></td>
                 <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill me-1" onclick="openEditUserModal('${safeUsername}')" title="Edit Profil">
+                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill me-1" data-username="${safeUsername}" onclick="openEditUserModal(this.getAttribute('data-username'))" title="Edit Profil">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill me-1" onclick="openResetPasswordModal('${safeUsername}')" title="Reset Password">
+                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill me-1" data-username="${safeUsername}" onclick="openResetPasswordModal(this.getAttribute('data-username'))" title="Reset Password">
                         <i class="fas fa-key"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" onclick="handleDeleteUserClick('${safeUsername}')" title="Hapus Akun">
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" data-username="${safeUsername}" onclick="handleDeleteUserClick(this.getAttribute('data-username'))" title="Hapus Akun">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -7883,7 +8076,7 @@ function displayRosterDetails(data) {
 
     function handleResetPasswordSubmit(e) {
         e.preventDefault();
-        if (!currentUser || currentUser.role !== 'Superadmin') return;
+        if (!checkIsSuperadmin_()) return;
 
         const targetUser = document.getElementById('resetInputUsername').value;
         const newPass = document.getElementById('resetInputNewPassword').value.trim();
@@ -7909,7 +8102,7 @@ function displayRosterDetails(data) {
     }
 
     function handleDeleteUserClick(username) {
-        if (!currentUser || currentUser.role !== 'Superadmin') return;
+        if (!checkIsSuperadmin_()) return;
 
         Swal.fire({
             title: 'Hapus Akun Petugas?',
